@@ -112,14 +112,14 @@ bool studentMoveTurtle(QPointF& pos_, int& nw_or) {
      */
     switch (state) {
       case 0: 
-        if (isBumped(pos_, nw_or)) turnRight(nw_or);
+        if (isBumped(pos_, nw_or)) turnLeft(nw_or);
         else {
           stepForward(pos_, nw_or);
           state = 1;
         }
         break;
       case 1: 
-        turnLeft(nw_or);
+        turnRight(nw_or);
         state = 0;
         break;
       default: 
