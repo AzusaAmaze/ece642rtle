@@ -7,7 +7,7 @@
  * LAST UPDATE: Sep 10, 2021
  *
  * This file is an algorithm to solve the ece642rtle maze
- * using the left-hand rule. The code is intentionaly left obfuscated.
+ * using the right-hand rule.
  *
  */
 
@@ -18,11 +18,9 @@ turtleMove studentTurtleStep(bool bumped) {return MOVE;}
 
 // OK TO MODIFY BELOW THIS LINE
 
-#define TIMEOUT 40    // bigger number slows down simulation so you can see what's happening
-
-enum directions : int {left=0, up=1, right=2, down=3};   // turtle directions
-enum states {state_0, state_1};                          // turtle states
-
+const uint32_t timeout = 40;    // bigger number slows down simulation so you can see what's happening 
+enum directions : int32_t {left=0, up=1, right=2, down=3};  // turtle directions
+enum states {state_0, state_1};                             // turtle states
 
 /*
  * Helper function to turn turtle orientation to the right.
@@ -43,6 +41,7 @@ void turnRight(int& nw_or) {
       nw_or = left;
       break;
     default:
+      ROS_ERROR("Unrecognized turtle orientation");
       break;
   }
 }
@@ -67,6 +66,7 @@ void turnLeft(int& nw_or) {
       nw_or = right;
       break;
     default:
+      ROS_ERROR("Unrecognized turtle orientation");
       break;
   }
 }
@@ -92,6 +92,7 @@ void stepForward(QPointF& pos_, int& nw_or) {
       pos_.setY(pos_.y() + 1);
       break;
     default:
+      ROS_ERROR("Unrecognized turtle orientation");
       break;
   }
 }
@@ -101,6 +102,7 @@ void stepForward(QPointF& pos_, int& nw_or) {
  * Helper function to test if turtle is bumped into wall.
  * Input: pos_  turtle position
  *        nw_or turtle orientation
+ * Output: whether turtle is facing a wall
  */
 bool isBumped(QPointF& pos_, int& nw_or) {
   float fx1, fy1, fx2, fy2;
@@ -127,6 +129,7 @@ bool isBumped(QPointF& pos_, int& nw_or) {
       fy1 += 1;
       break;
     default:
+      ROS_ERROR("Unrecognized turtle orientation");
       break;
   }
 
@@ -137,11 +140,14 @@ bool isBumped(QPointF& pos_, int& nw_or) {
 /* 
  * This procedure takes the current turtle position and orientation and returns
  * true=submit changes, false=do not submit changes
- * Input: pos_  turtle position
- *        nw_or turtle orientation
+ * Input:  pos_         turtle position
+ *         nw_or        turtle orientation
+ * Saved:  timer        Count down timer for next turtle movement
+ *         turtle_state State for turtle state machine
+ * Output: Whether to submit turtle position changes
  */
-bool studentMoveTurtle(QPointF& pos_, int& nw_or) { 
-  static int timer = 0;
+bool studentMoveTurtle(QPointF& pos_, int32_t& nw_or) { 
+  static uint32_t timer = 0;
   static states turtle_state = state_0;
   bool time_up = (timer == 0);
 
@@ -172,13 +178,14 @@ bool studentMoveTurtle(QPointF& pos_, int& nw_or) {
         turtle_state = state_0;
         break;
       default: 
+        ROS_ERROR("Unrecignized tuetle state");
         break;
     }
 
 	  ROS_INFO("Orientation=%d  STATE=%d", nw_or, turtle_state);
 
     // update timer
-    timer = TIMEOUT;
+    timer = timeout;
   } else {
     timer -= 1;
   }
