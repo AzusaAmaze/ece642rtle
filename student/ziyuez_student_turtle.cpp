@@ -54,20 +54,20 @@ void turnRight(int& nw_or) {
  */
 void turnLeft(int& nw_or) {
   switch (nw_or) {
-  case(left): 
-    nw_or = down;
-    break;
-  case(up):
-    nw_or = left;
-    break;
-  case(right):
-    nw_or = up;
-    break;
-  case(down):
-    nw_or = right;
-    break;
-  default:
-    break;
+    case(left): 
+      nw_or = down;
+      break;
+    case(up):
+      nw_or = left;
+      break;
+    case(right):
+      nw_or = up;
+      break;
+    case(down):
+      nw_or = right;
+      break;
+    default:
+      break;
   }
 }
 
@@ -78,11 +78,22 @@ void turnLeft(int& nw_or) {
  *        nw_or turtle orientation
  */
 void stepForward(QPointF& pos_, int& nw_or) {
-  if (nw_or == up) pos_.setY(pos_.y() - 1); 
-  if (nw_or == right) pos_.setX(pos_.x() + 1);
-  if (nw_or == down) pos_.setY(pos_.y() + 1);
-  if (nw_or == left) pos_.setX(pos_.x() - 1);
-  return;
+  switch (nw_or) {
+    case(left): 
+      pos_.setX(pos_.x() - 1);
+      break;
+    case(up):
+      pos_.setY(pos_.y() - 1);
+      break;
+    case(right):
+      pos_.setX(pos_.x() + 1);
+      break;
+    case(down):
+      pos_.setY(pos_.y() + 1);
+      break;
+    default:
+      break;
+  }
 }
 
 
@@ -98,17 +109,27 @@ bool isBumped(QPointF& pos_, int& nw_or) {
   fx2 = pos_.x(); 
   fy2 = pos_.y();
 
-  if (nw_or == left) fy2 += 1;
-  else if (nw_or == up) fx2 += 1;
-  else if (nw_or == right) {
-    fx2 += 1;
-    fy2 += 1;
-    fx1 += 1;
-  } else if (nw_or == down) {
-    fx2 += 1;
-    fy2 += 1;
-    fy1 += 1;
+  switch (nw_or) {
+    case(left): 
+      fy2 += 1;
+      break;
+    case(up):
+      fx2 += 1;
+      break;
+    case(right):
+      fx2 += 1;
+      fy2 += 1;
+      fx1 += 1;
+      break;
+    case(down):
+      fx2 += 1;
+      fy2 += 1;
+      fy1 += 1;
+      break;
+    default:
+      break;
   }
+
   return bumped(fx1,fy1,fx2,fy2);
 }
 
