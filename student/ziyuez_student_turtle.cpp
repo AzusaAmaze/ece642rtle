@@ -18,9 +18,16 @@ turtleMove studentTurtleStep(bool bumped) {return MOVE;}
 
 // OK TO MODIFY BELOW THIS LINE
 
+typedef struct map_pos {
+  int32_t row;
+  int32_t col;
+} map_pos_t;
+
 const uint32_t timeout = 40;    // bigger number slows down simulation so you can see what's happening 
 enum directions : int32_t {left=0, up=1, right=2, down=3};  // turtle directions
 enum states {state_0, state_1};                             // turtle states
+static int32_t visit_map[23][23] = {0};                     // visit counts for map
+static map_pos_t turtle_pos = {11, 11};                       // turtle position on visit map
 
 /*
  * Helper function to turn turtle orientation to the right.
@@ -71,9 +78,42 @@ void turnLeft(int& nw_or) {
   }
 }
 
+/*
+ * The only function that reads/writes turtle_pos and visit_map
+ */
+void visitUpdate(int& nw_or) {
+  // update the turtle pos
+  switch (nw_or) {
+    case(left): 
+      turtle_pos.col -= 1;
+      break;
+    case(up):
+      turtle_pos.row -= 1;
+      break;
+    case(right):
+      turtle_pos.col += 1;
+      break;
+    case(down):
+      turtle_pos.row += 1;
+      break;
+    default:
+      ROS_ERROR("Unrecognized turtle orientation");
+      break;
+  }
+  // update the visit count on the new pos
+  visit_map[turtle_pos.row][turtle_pos.col] +=1;
+}
 
 /*
- * Helper function to step forward the turtle by one unit.
+ * Reads turtle_pos and return the visit count on visit_map
+ */
+int32_t visitGet() {
+  return visit_map[turtle_pos.row][turtle_pos.col];
+}
+
+
+/*
+ * Helper function to step forward the turtle by one unit and update turtle visit counts.
  * Input: pos_  turtle position
  *        nw_or turtle orientation
  */
@@ -95,6 +135,7 @@ void stepForward(QPointF& pos_, int& nw_or) {
       ROS_ERROR("Unrecognized turtle orientation");
       break;
   }
+  visitUpdate(nw_or);
 }
 
 
@@ -189,5 +230,7 @@ bool studentMoveTurtle(QPointF& pos_, int32_t& nw_or) {
   } else {
     timer -= 1;
   }
+
+  displayVisits(visitGet());
   return time_up;
 }
