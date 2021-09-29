@@ -16,12 +16,28 @@ void displayVisits(int visits);
 bool moveTurtle(QPointF& pos_, int& nw_or);
 
 // Scope-preserving changes to these lines permitted (see p5 writeup)
-enum turtleMove {MOVE};
-QPointF translatePos(QPointF pos_, turtleMove nextMove);
-int translateOrnt(int orientation, turtleMove nextMove);
-turtleMove studentTurtleStep(bool bumped);
+typedef enum {
+  LEFT, 
+  RIGHT, 
+  MOVE, 
+  STOP
+} turtleMove;
 
-// OK to change below this line
-bool studentMoveTurtle(QPointF& turtle_pos, int32_t& turtle_orient);
+typedef enum : int32_t {
+  left=0, 
+  up=1, 
+  right=2, 
+  down=3
+} directions;  // turtle directions
+
+QPointF translatePos(QPointF pos_, int32_t orientation, turtleMove next_move);
+int32_t translateOrnt(int32_t orientation, turtleMove next_move);
+
+turtleMove studentTurtleStep();
+void studentTurtleTransit(bool bumped, bool goal);
+
+int32_t turnRight(int32_t turtle_orient);
+int32_t turnLeft(int32_t turtle_orient);
+int32_t visitGet();
 
 
