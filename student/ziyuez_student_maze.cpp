@@ -209,7 +209,7 @@ int32_t translateOrnt(int32_t orientation, turtleMove next_move) {
       ROS_ERROR("Unrecognized turtle move");
       break;
   }
-  return orientation;
+  return result_orient;
 }
 
 

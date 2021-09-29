@@ -33,6 +33,34 @@ static int32_t visit_map[23][23] = {0};        // visit counts for map
 static map_pos_t turtle_coord = {11, 11};      // turtle position on visit map
 
 
+/*
+ * The only function that reads/writes turtle_coord and visit_map
+ * Input: turtle_orient turtle orientation
+ */
+static void visitUpdate(int turtle_orient) {
+  // update the turtle pos
+  switch (turtle_orient) {
+    case(left): 
+      turtle_coord.col -= 1;
+      break;
+    case(up):
+      turtle_coord.row -= 1;
+      break;
+    case(right):
+      turtle_coord.col += 1;
+      break;
+    case(down):
+      turtle_coord.row += 1;
+      break;
+    default:
+      ROS_ERROR("Unrecognized turtle orientation");
+      break;
+  }
+  // update the visit count on the new pos
+  visit_map[turtle_coord.row][turtle_coord.col] +=1;
+}
+
+
 /* 
  * This procedure decides the next move of turtle based on the current
  * state and updates the local visit map information. Always called 
@@ -51,7 +79,7 @@ turtleMove studentTurtleStep() {
   * 3. MOVE. step 1 block forward
   * State 1 is the entry point of this "state machine".
   */
-  switch (states)
+  switch (turtle_state)
   {
     case S_0:
       next_move = STOP;
@@ -66,7 +94,7 @@ turtleMove studentTurtleStep() {
       break;
     case S_3:
       next_move = MOVE;
-      visitUpdate(map_orient)
+      visitUpdate(map_orient);
       break;
     default:
       ROS_ERROR("Unrecognized turtle state");
@@ -93,7 +121,7 @@ void studentTurtleTransit(bool bumped, bool goal) {
   * 3. MOVE. will stop if at goal. else turn right
   * State 1 is the entry point of this "state machine".
   */
-  switch (states)
+  switch (turtle_state)
   {
     case S_0:
       turtle_state = S_0;
@@ -114,35 +142,6 @@ void studentTurtleTransit(bool bumped, bool goal) {
       ROS_ERROR("Unrecognized turtle state");
       break;
   }
-  return next_move;
-}
-
-
-/*
- * The only function that reads/writes turtle_coord and visit_map
- * Input: turtle_orient turtle orientation
- */
-static void visitUpdate(int turtle_orient) {
-  // update the turtle pos
-  switch (turtle_orient) {
-    case(left): 
-      turtle_coord.col -= 1;
-      break;
-    case(up):
-      turtle_coord.row -= 1;
-      break;
-    case(right):
-      turtle_coord.col += 1;
-      break;
-    case(down):
-      turtle_coord.row += 1;
-      break;
-    default:
-      ROS_ERROR("Unrecognized turtle orientation");
-      break;
-  }
-  // update the visit count on the new pos
-  visit_map[turtle_coord.row][turtle_coord.col] +=1;
 }
 
 
