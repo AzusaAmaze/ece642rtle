@@ -26,6 +26,14 @@ typedef enum {
   PATH = 2
 } block_type;
 
+typedef struct block_info {
+  block_type up_block;
+  block_type down_block;
+  block_type left_block;
+  block_type right_block;
+  block_type curr_block;
+} block_info_t;
+
 typedef enum {
   FRONT_P, 
   BACK_P, 
@@ -46,7 +54,7 @@ typedef enum {
 static states turtle_state = S_6;                   // turtle state
 static int32_t map_orient = up;                     // visit map orientation
 static int32_t visit_map[23][23] = {0};             // visit counts for map
-static block_type junction_map[23][23] = {BLOCK};   // map marking junctions and walkable paths
+static block_info_t junction_map[23][23] = {{BLOCK, BLOCK, BLOCK, BLOCK, BLOCK}};   // map marking junctions and walkable paths
 static map_pos_t turtle_coord = {11, 11};           // turtle position on visit map
 
 
@@ -116,8 +124,28 @@ static void visitUpdate(int32_t turtle_orient) {
 
 
 // TODO: add comment
-static bool atPath(map_pos_t path_coord) {
-  return junction_map[path_coord.row][path_coord.col] == PATH;
+static bool atPath(int32_t turtle_orient) {
+  block_type oriented_block;
+  block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
+  switch (turtle_orient) {
+    case(left): 
+      oriented_block = curr_info.left_block;
+      break;
+    case(up):
+      oriented_block = curr_info.up_block;
+      break;
+    case(right):
+      oriented_block = curr_info.right_block;
+      break;
+    case(down):
+      oriented_block = curr_info.down_block;
+      break;
+    default:
+      ROS_ERROR("Unrecognized turtle orientation");
+      break;
+  }
+
+  return oriented_block == PATH;
 }
 
 
@@ -125,53 +153,61 @@ static bool atPath(map_pos_t path_coord) {
 static path_type pickPath(int32_t turtle_orient, bool first_time) {
   /* Colelct coordinates for four adjacent blocks */
   map_pos_t front_coord, back_coord, left_coord, right_coord;
+  int32_t front_orient, back_orient, left_orient, right_orient;
   path_type next_path;
 
   switch (turtle_orient) {
     case(left): 
-      front_coord = orientedCoord(left);
-      back_coord = orientedCoord(right);
-      left_coord = orientedCoord(down);
-      right_coord = orientedCoord(up);
+      front_orient = left;
+      back_orient = right;
+      left_orient = down;
+      right_orient = up;
       break;
     case(up):
-      front_coord = orientedCoord(up);
-      back_coord = orientedCoord(down);
-      left_coord = orientedCoord(left);
-      right_coord = orientedCoord(right);
+      front_orient = up;
+      back_orient = down;
+      left_orient = left;
+      right_orient = right;
       break;
     case(right):
-      front_coord = orientedCoord(right);
-      back_coord = orientedCoord(left);
-      left_coord = orientedCoord(up);
-      right_coord = orientedCoord(down);
+      front_orient = right;
+      back_orient = left;
+      left_orient = up;
+      right_orient = down;
       break;
     case(down):
-      front_coord = orientedCoord(down);
-      back_coord = orientedCoord(up);
-      left_coord = orientedCoord(right);
-      right_coord = orientedCoord(left);
+      front_orient = down;
+      back_orient = up;
+      left_orient = right;
+      right_orient = left;
       break;
     default:
       ROS_ERROR("Unrecognized turtle orientation");
       break;
   }
 
+  front_coord = orientedCoord(front_orient);
+  back_coord = orientedCoord(back_orient);
+  left_coord = orientedCoord(left_orient);
+  right_coord = orientedCoord(right_orient);
+
   /* pick path based on junction map and number of visits at junction */
   if (first_time) {
-    if (atPath(front_coord)) next_path = FRONT_P;
-    else if (atPath(left_coord)) next_path = LEFT_P;
+    if (atPath(front_orient)) next_path = FRONT_P;
+    else if (atPath(left_orient)) next_path = LEFT_P;
     else next_path = RIGHT_P;
   } else {
-    if (visitGet(back_coord) == 1) next_path = BACK_P;
+    /* donnot go back if entered path is dead end */
+    ROS_INFO("back path: %d", junction_map[back_coord.row][back_coord.col].curr_block);
+    if (visitGet(back_coord) == 1 && junction_map[back_coord.row][back_coord.col].curr_block != BLOCK) next_path = BACK_P;
     else {
       /* pick a path with least number of visits (0 or 1) */
-      if (atPath(front_coord) && visitGet(front_coord) == 0) next_path = FRONT_P;
-      else if (atPath(left_coord) && visitGet(left_coord) == 0) next_path = LEFT_P;
-      else if (atPath(right_coord) && visitGet(right_coord) == 0) next_path = RIGHT_P;
-      else if (atPath(front_coord) && visitGet(front_coord) < 2) next_path = FRONT_P;
-      else if (atPath(left_coord) && visitGet(left_coord) < 2) next_path = LEFT_P;
-      else if (atPath(right_coord) && visitGet(right_coord) < 2) next_path = RIGHT_P;
+      if (atPath(front_orient) && visitGet(front_coord) == 0) next_path = FRONT_P;
+      else if (atPath(left_orient) && visitGet(left_coord) == 0) next_path = LEFT_P;
+      else if (atPath(right_orient) && visitGet(right_coord) == 0) next_path = RIGHT_P;
+      else if (atPath(front_orient) && visitGet(front_coord) < 2) next_path = FRONT_P;
+      else if (atPath(left_orient) && visitGet(left_coord) < 2) next_path = LEFT_P;
+      else if (atPath(right_orient) && visitGet(right_coord) < 2) next_path = RIGHT_P;
       else ROS_ERROR("Unable to find walkable path at junction!");
     }
   }
@@ -191,29 +227,60 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
  */
 static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
   map_pos_t path_coord = orientedCoord(turtle_orient);
+  block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
 
+  if (turn_count == 1) curr_info.curr_block = BLOCK;
   /*
    * Update walkable path by checking whether faced block is obstructed.
    * If turtle turned 90 or 270 degrees and is not obstructed by wall, 
    * current block is junction.
    */
-  if (!bumped) {
-    ROS_INFO("tested a path!");
-    junction_map[path_coord.row][path_coord.col] = PATH;
-    if (turn_count%2 != 0) {
-      ROS_INFO("JUNC!");
-      junction_map[turtle_coord.row][turtle_coord.col] = JUNC;
-    }
-  } else {
-    ROS_INFO("not a path!");
-    junction_map[path_coord.row][path_coord.col] = BLOCK;
+  switch (turtle_orient) {
+    case(left): 
+      if (!bumped) {
+        curr_info.left_block = PATH;
+      } else {
+        curr_info.left_block = BLOCK;
+      }
+      break;
+    case(up):
+      if (!bumped) {
+        curr_info.up_block = PATH;
+      } else {
+        curr_info.up_block = BLOCK;
+      }
+      break;
+    case(right):
+      if (!bumped) {
+        curr_info.right_block = PATH;
+      } else {
+        curr_info.right_block = BLOCK;
+      }
+      break;
+    case(down):
+      if (!bumped) {
+        curr_info.down_block = PATH;
+      } else {
+        curr_info.down_block = BLOCK;
+      }
+      break;
+    default:
+      ROS_ERROR("Unrecognized turtle orientation");
+      break;
   }
+
+  if (!bumped) {
+    if (turn_count%2 != 0) curr_info.curr_block = JUNC;
+    if (turn_count == 0 && curr_info.curr_block != JUNC) curr_info.curr_block = PATH;
+  }
+
+  junction_map[turtle_coord.row][turtle_coord.col] = curr_info;
 }
 
 
 // TODO: add comment
 static bool atJunc() {
-  return junction_map[turtle_coord.row][turtle_coord.col] == JUNC;
+  return junction_map[turtle_coord.row][turtle_coord.col].curr_block == JUNC;
 }
 
 
