@@ -58,6 +58,15 @@ static void visitInc() {
   visit_map[turtle_coord.row][turtle_coord.col] +=1;
 }
 
+/*
+ * Reads map_coord and return the visit count on visit_map
+ * Input:  map_coord  coordinate where we want the visit count at
+ * Output: visit      count at the current turtle coordinates
+ */
+static int32_t visitGet(map_pos_t map_coord) {
+  return visit_map[map_coord.row][map_coord.col];
+}
+
 
 // TODO: add comment
 static bool firstVisit() {
@@ -159,10 +168,10 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
       /* pick a path with least number of visits (0 or 1) */
       if (atPath(front_coord) && visitGet(front_coord) == 0) next_path = FRONT_P;
       else if (atPath(left_coord) && visitGet(left_coord) == 0) next_path = LEFT_P;
-      else if (visitGet(right_coord) == 0) next_path = RIGHT_P;
+      else if (atPath(right_coord) && visitGet(right_coord) == 0) next_path = RIGHT_P;
       else if (atPath(front_coord) && visitGet(front_coord) < 2) next_path = FRONT_P;
-      else if (atPath(left_coord) && && visitGet(left_coord) < 2) next_path = LEFT_P;
-      else if (visitGet(right_coord) < 2) next_path = RIGHT_P;
+      else if (atPath(left_coord) && visitGet(left_coord) < 2) next_path = LEFT_P;
+      else if (atPath(right_coord) && visitGet(right_coord) < 2) next_path = RIGHT_P;
       else ROS_ERROR("Unable to find walkable path at junction!");
     }
   }
@@ -189,8 +198,15 @@ static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
    * current block is junction.
    */
   if (!bumped) {
+    ROS_INFO("tested a path!");
     junction_map[path_coord.row][path_coord.col] = PATH;
-    if (turn_count%2 != 0) junction_map[turtle_coord.row][turtle_coord.col] = JUNC;
+    if (turn_count%2 != 0) {
+      ROS_INFO("JUNC!");
+      junction_map[turtle_coord.row][turtle_coord.col] = JUNC;
+    }
+  } else {
+    ROS_INFO("not a path!");
+    junction_map[path_coord.row][path_coord.col] = BLOCK;
   }
 }
 
@@ -263,8 +279,9 @@ turtleMove studentTurtleStep() {
  * in each time cycle.
  * Input:  bumped       if turtle is facing a wall
  *         goal         if turtle is at goal
+ * Output: visit_count  number of visits after transit
  */
-void studentTurtleTransit(bool bumped, bool goal) {
+int32_t studentTurtleTransit(bool bumped, bool goal) {
   // TODO: update comments
   static int32_t turn_count = 0;
   bool first_time = firstVisit();
@@ -286,37 +303,40 @@ void studentTurtleTransit(bool bumped, bool goal) {
       break;
 
     case S_1:
+    {
       /* side effects */
       turn_count = 0;
-
       /* state transition */
       bool is_junc = atJunc();
       if (first_time && goal) turtle_state = S_0;
-      if (first_time && !goal) turtle_state = S_2;
-      if (!first_time && ((!is_junc) || (is_junc && pickPath(map_orient, first_time) == FRONT_P))) turtle_state = S_1;
-      if (!first_time && is_junc && pickPath(map_orient, first_time) == LEFT_P) turtle_state = S_4;
-      if (!first_time && is_junc && pickPath(map_orient, first_time) == RIGHT_P) turtle_state = S_5;
-      if (!first_time && is_junc && pickPath(map_orient, first_time) == BACK_P) turtle_state = S_3;
+      else if (first_time && !goal) turtle_state = S_2;
+      else if (!first_time && ((!is_junc) || (is_junc && pickPath(map_orient, first_time) == FRONT_P))) turtle_state = S_1;
+      else if (!first_time && is_junc && pickPath(map_orient, first_time) == LEFT_P) turtle_state = S_4;
+      else if (!first_time && is_junc && pickPath(map_orient, first_time) == RIGHT_P) turtle_state = S_5;
+      else if (!first_time && is_junc && pickPath(map_orient, first_time) == BACK_P) turtle_state = S_3;
+      else ROS_ERROR("Unlisted combination at S1");
       break;
+    }
 
     case S_2:
+    {
       /* side effects */
       turn_count = (turn_count+1)%4;
       juncUpdate(map_orient, bumped, turn_count);
-
       /* state transition */
       bool is_junc = atJunc();
       if (turn_count != 0) turtle_state = S_2;
-      if (turn_count == 0 && ((!is_junc && bumped) || (is_junc && pickPath(map_orient, first_time) == BACK_P))) turtle_state = S_3;
-      if (turn_count == 0 && ((!is_junc && !bumped) || (is_junc && pickPath(map_orient, first_time) == FRONT_P))) turtle_state = S_1;
-      if (turn_count == 0 && is_junc && pickPath(map_orient, first_time) = LEFT_P) turtle_state = S_4;
-      if (turn_count == 0 && is_junc && pickPath(map_orient, first_time) = RIGHT_P) turtle_state = S_5;
+      else if (turn_count == 0 && ((!is_junc && bumped) || (is_junc && pickPath(map_orient, first_time) == BACK_P))) turtle_state = S_3;
+      else if (turn_count == 0 && ((!is_junc && !bumped) || (is_junc && pickPath(map_orient, first_time) == FRONT_P))) turtle_state = S_1;
+      else if (turn_count == 0 && is_junc && pickPath(map_orient, first_time) == LEFT_P) turtle_state = S_4;
+      else if (turn_count == 0 && is_junc && pickPath(map_orient, first_time) == RIGHT_P) turtle_state = S_5;
+      else ROS_ERROR("Unlisted combination at S2");
       break;
+    }
 
     case S_3:
       /* side effects */
       turn_count = turn_count+1;
-
       /* state transition */
       if (turn_count != 2) turtle_state = S_3;
       if (turn_count == 2) turtle_state = S_1;
@@ -342,14 +362,7 @@ void studentTurtleTransit(bool bumped, bool goal) {
       ROS_ERROR("Unrecognized turtle state");
       break;
   }
-}
 
-
-/*
- * Reads map_coord and return the visit count on visit_map
- * Input:  map_coord  coordinate where we want the visit count at
- * Output: visit      count at the current turtle coordinates
- */
-int32_t visitGet(map_pos_t map_coord) {
-  return visit_map[map_coord.row][map_coord.col];
+  int32_t visit_count = visitGet(turtle_coord);
+  return visit_count;
 }

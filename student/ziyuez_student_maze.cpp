@@ -237,8 +237,8 @@ bool moveTurtle(QPointF& pos_, int& nw_or)
     bool goal = atend(pos_.x(), pos_.y());
 
     // update state & visit map by calling student_turtle methods
-    studentTurtleTransit(bumped, goal);
-    displayVisits(visitGet());
+    int32_t visit_count = studentTurtleTransit(bumped, goal);
+    displayVisits(visit_count);
     timer = timeout;
   } else {
     timer -= 1;
