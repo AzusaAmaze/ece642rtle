@@ -32,6 +32,10 @@ typedef struct block_info {
   block_type left_block;
   block_type right_block;
   block_type curr_block;
+  int32_t up_count;
+  int32_t down_count;
+  int32_t left_count;
+  int32_t right_count;
 } block_info_t;
 
 typedef enum {
@@ -54,7 +58,7 @@ typedef enum {
 static states turtle_state = S_6;                   // turtle state
 static int32_t map_orient = up;                     // visit map orientation
 static int32_t visit_map[23][23] = {0};             // visit counts for map
-static block_info_t junction_map[23][23] = {{BLOCK, BLOCK, BLOCK, BLOCK, BLOCK}};   // map marking junctions and walkable paths
+static block_info_t junction_map[23][23] = {{BLOCK, BLOCK, BLOCK, BLOCK, BLOCK, 0, 0, 0, 0}};   // map marking junctions and walkable paths
 static map_pos_t turtle_coord = {11, 11};           // turtle position on visit map
 
 
@@ -149,68 +153,140 @@ static bool atPath(int32_t turtle_orient) {
 }
 
 
-// TODO: add comments
-static path_type pickPath(int32_t turtle_orient, bool first_time) {
-  /* Colelct coordinates for four adjacent blocks */
-  map_pos_t front_coord, back_coord, left_coord, right_coord;
-  int32_t front_orient, back_orient, left_orient, right_orient;
-  path_type next_path;
-
+static int32_t visitPath(int32_t turtle_orient) {
+  int32_t path_count;
+  block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
   switch (turtle_orient) {
     case(left): 
-      front_orient = left;
-      back_orient = right;
-      left_orient = down;
-      right_orient = up;
+      path_count = curr_info.left_count;
       break;
     case(up):
-      front_orient = up;
-      back_orient = down;
-      left_orient = left;
-      right_orient = right;
+      path_count = curr_info.up_count;
       break;
     case(right):
-      front_orient = right;
-      back_orient = left;
-      left_orient = up;
-      right_orient = down;
+      path_count = curr_info.right_count;
       break;
     case(down):
-      front_orient = down;
-      back_orient = up;
-      left_orient = right;
-      right_orient = left;
+      path_count = curr_info.down_count;
       break;
     default:
       ROS_ERROR("Unrecognized turtle orientation");
       break;
   }
+  return path_count;
+}
 
-  front_coord = orientedCoord(front_orient);
-  back_coord = orientedCoord(back_orient);
-  left_coord = orientedCoord(left_orient);
-  right_coord = orientedCoord(right_orient);
 
-  /* pick path based on junction map and number of visits at junction */
-  if (first_time) {
-    if (atPath(front_orient)) next_path = FRONT_P;
-    else if (atPath(left_orient)) next_path = LEFT_P;
-    else next_path = RIGHT_P;
-  } else {
-    /* donnot go back if entered path is dead end */
-    ROS_INFO("back path: %d", junction_map[back_coord.row][back_coord.col].curr_block);
-    if (visitGet(back_coord) == 1 && junction_map[back_coord.row][back_coord.col].curr_block != BLOCK) next_path = BACK_P;
-    else {
-      /* pick a path with least number of visits (0 or 1) */
-      if (atPath(front_orient) && visitGet(front_coord) == 0) next_path = FRONT_P;
-      else if (atPath(left_orient) && visitGet(left_coord) == 0) next_path = LEFT_P;
-      else if (atPath(right_orient) && visitGet(right_coord) == 0) next_path = RIGHT_P;
-      else if (atPath(front_orient) && visitGet(front_coord) < 2) next_path = FRONT_P;
-      else if (atPath(left_orient) && visitGet(left_coord) < 2) next_path = LEFT_P;
-      else if (atPath(right_orient) && visitGet(right_coord) < 2) next_path = RIGHT_P;
-      else ROS_ERROR("Unable to find walkable path at junction!");
+// TODO: add comments
+static path_type pickPath(int32_t turtle_orient, bool first_time) {
+  int32_t front_orient, back_orient, left_orient, right_orient, path_orient;
+  path_type next_path;
+  bool is_junc = (junction_map[turtle_coord.row][turtle_coord.col].curr_block == JUNC);
+  bool is_path = (junction_map[turtle_coord.row][turtle_coord.col].curr_block == PATH);
+  bool is_dead = (junction_map[turtle_coord.row][turtle_coord.col].curr_block == BLOCK);
+
+  if (is_junc) {
+    /* pick path based on junction map and number of visits at junction */
+    switch (turtle_orient) {
+      case(left): 
+        front_orient = left;
+        back_orient = right;
+        left_orient = down;
+        right_orient = up;
+        junction_map[turtle_coord.row][turtle_coord.col].right_count += 1;
+        break;
+      case(up):
+        front_orient = up;
+        back_orient = down;
+        left_orient = left;
+        right_orient = right;
+        junction_map[turtle_coord.row][turtle_coord.col].down_count += 1;
+        break;
+      case(right):
+        front_orient = right;
+        back_orient = left;
+        left_orient = up;
+        right_orient = down;
+        junction_map[turtle_coord.row][turtle_coord.col].left_count += 1;
+        break;
+      case(down):
+        front_orient = down;
+        back_orient = up;
+        left_orient = right;
+        right_orient = left;
+        junction_map[turtle_coord.row][turtle_coord.col].up_count += 1;
+        break;
+      default:
+        ROS_ERROR("Unrecognized turtle orientation");
+        break;
     }
-  }
+
+    if (first_time) {
+      if (atPath(front_orient)) {
+        next_path = FRONT_P;
+        path_orient = front_orient;
+      }
+      else if (atPath(left_orient)) {
+        next_path = LEFT_P;
+        path_orient = left_orient;
+      }
+      else {
+        next_path = RIGHT_P;
+        path_orient = right_orient;
+      }
+    } else {
+      if (visitPath(back_orient) == 1) {
+        next_path = BACK_P;
+        path_orient = back_orient;
+      } else {
+        /* pick a path with least number of visits (0 or 1) */
+        if (atPath(front_orient) && visitPath(front_orient) == 0) {
+          next_path = FRONT_P;
+          path_orient = front_orient;
+        } else if (atPath(left_orient) && visitPath(left_orient) == 0) {
+          next_path = LEFT_P;
+          path_orient = left_orient;
+        } else if (atPath(right_orient) && visitPath(right_orient) == 0) {
+          next_path = RIGHT_P;
+          path_orient = right_orient;
+        } else if (atPath(front_orient) && visitPath(front_orient) < 2) {
+          next_path = FRONT_P;
+          path_orient = front_orient;
+        } else if (atPath(left_orient) && visitPath(left_orient) < 2) {
+          next_path = LEFT_P;
+          path_orient = left_orient;
+        } else if (atPath(right_orient) && visitPath(right_orient) < 2) {
+          next_path = RIGHT_P;
+          path_orient = right_orient;
+        } else {
+          ROS_INFO("counts %d %d %d %d", visitPath(front_orient), visitPath(back_orient), visitPath(left_orient), visitPath(right_orient));
+          ROS_ERROR("Unable to find walkable path at junction!");
+        }
+      }
+    }
+
+    switch (path_orient) {
+      case (left):
+        junction_map[turtle_coord.row][turtle_coord.col].left_count += 1;
+        break;
+      case (right):
+        junction_map[turtle_coord.row][turtle_coord.col].right_count += 1;
+        break;
+      case (up):
+        junction_map[turtle_coord.row][turtle_coord.col].up_count += 1;
+        break;
+      case (down):
+        junction_map[turtle_coord.row][turtle_coord.col].down_count += 1;
+        break;
+      default: 
+        ROS_ERROR("Unrecognized path orientation");
+        break;
+    }
+  } else if (is_path) {
+    next_path = FRONT_P;
+  } else if (is_dead) {
+    next_path = BACK_P;
+  } else ROS_ERROR("Unrecognized turtle path type");
 
   return next_path;
 }
@@ -275,12 +351,6 @@ static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
   }
 
   junction_map[turtle_coord.row][turtle_coord.col] = curr_info;
-}
-
-
-// TODO: add comment
-static bool atJunc() {
-  return junction_map[turtle_coord.row][turtle_coord.col].curr_block == JUNC;
 }
 
 
@@ -374,13 +444,13 @@ int32_t studentTurtleTransit(bool bumped, bool goal) {
       /* side effects */
       turn_count = 0;
       /* state transition */
-      bool is_junc = atJunc();
+      path_type next_path = 
       if (first_time && goal) turtle_state = S_0;
       else if (first_time && !goal) turtle_state = S_2;
-      else if (!first_time && ((!is_junc) || (is_junc && pickPath(map_orient, first_time) == FRONT_P))) turtle_state = S_1;
-      else if (!first_time && is_junc && pickPath(map_orient, first_time) == LEFT_P) turtle_state = S_4;
-      else if (!first_time && is_junc && pickPath(map_orient, first_time) == RIGHT_P) turtle_state = S_5;
-      else if (!first_time && is_junc && pickPath(map_orient, first_time) == BACK_P) turtle_state = S_3;
+      else if (!first_time && pickPath(map_orient, first_time) == FRONT_P) turtle_state = S_1;
+      else if (!first_time && pickPath(map_orient, first_time) == LEFT_P) turtle_state = S_4;
+      else if (!first_time && pickPath(map_orient, first_time) == RIGHT_P) turtle_state = S_5;
+      else if (!first_time && pickPath(map_orient, first_time) == BACK_P) turtle_state = S_3;
       else ROS_ERROR("Unlisted combination at S1");
       break;
     }
@@ -391,12 +461,11 @@ int32_t studentTurtleTransit(bool bumped, bool goal) {
       turn_count = (turn_count+1)%4;
       juncUpdate(map_orient, bumped, turn_count);
       /* state transition */
-      bool is_junc = atJunc();
       if (turn_count != 0) turtle_state = S_2;
-      else if (turn_count == 0 && ((!is_junc && bumped) || (is_junc && pickPath(map_orient, first_time) == BACK_P))) turtle_state = S_3;
-      else if (turn_count == 0 && ((!is_junc && !bumped) || (is_junc && pickPath(map_orient, first_time) == FRONT_P))) turtle_state = S_1;
-      else if (turn_count == 0 && is_junc && pickPath(map_orient, first_time) == LEFT_P) turtle_state = S_4;
-      else if (turn_count == 0 && is_junc && pickPath(map_orient, first_time) == RIGHT_P) turtle_state = S_5;
+      else if (turn_count == 0 && pickPath(map_orient, first_time) == BACK_P) turtle_state = S_3;
+      else if (turn_count == 0 && pickPath(map_orient, first_time) == FRONT_P) turtle_state = S_1;
+      else if (turn_count == 0 && pickPath(map_orient, first_time) == LEFT_P) turtle_state = S_4;
+      else if (turn_count == 0 && pickPath(map_orient, first_time) == RIGHT_P) turtle_state = S_5;
       else ROS_ERROR("Unlisted combination at S2");
       break;
     }
