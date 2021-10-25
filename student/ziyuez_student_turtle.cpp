@@ -81,13 +81,20 @@ static int32_t visitGet(map_pos_t map_coord) {
 }
 
 
-// TODO: add comment
+/*
+ * Return whether current turtle block is visited the first time
+ * Output: bool       whether current block is visited the first time
+ */
 static bool firstVisit() {
   return visitGet(turtle_coord) == 1;
 }
 
 
-// TODO: add comment
+/*
+ * Compute the coordinates of the block turtle is orienting towards
+ * Input:  turtle_orient  orientation of turtle
+ * Output: faced_coord    coordinates turtle facing towards
+ */
 static map_pos_t orientedCoord(int32_t turtle_orient) {
   map_pos_t faced_coord;
   faced_coord.row = turtle_coord.row; 
@@ -116,19 +123,10 @@ static map_pos_t orientedCoord(int32_t turtle_orient) {
 
 
 /*
- * The only function that reads/writes turtle_coord and visit_map
- * Input: turtle_orient turtle orientation
+ * Determine if turtle is facing towards a walkable path
+ * Input:  turtle_orient  orientation of turtle
+ * Output: bool           whether oriented block is a path
  */
-static void visitUpdate(int32_t turtle_orient) {
-  // update the turtle pos
-  turtle_coord = orientedCoord(turtle_orient);
-  
-  // update the visit count on the new pos
-  visitInc();
-}
-
-
-// TODO: add comment
 static bool atPath(int32_t turtle_orient) {
   block_type oriented_block;
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
@@ -154,6 +152,11 @@ static bool atPath(int32_t turtle_orient) {
 }
 
 
+/*
+ * Count number of times the faced path is visited
+ * Input:  turtle_orient  orientation of turtle
+ * Output: path_count     number of times path is visited
+ */
 static int32_t visitPath(int32_t turtle_orient) {
   int32_t path_count;
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
@@ -178,7 +181,15 @@ static int32_t visitPath(int32_t turtle_orient) {
 }
 
 
-// TODO: add comments
+/*
+ * Determine the path to take at a junction. This function is only 
+ * called when turtle is in S_7, which is when turtle is at junction.
+ * This function updates the path visit count of the entered path and 
+ * future path.
+ * Input:  turtle_orient  orientation of turtle
+ *         first_time     whether junction is visited the first time
+ * Output: next_path      type of the path to be taken
+ */
 static path_type pickPath(int32_t turtle_orient, bool first_time) {
   int32_t front_orient, back_orient, left_orient, right_orient, path_orient;
   path_type next_path;
@@ -218,6 +229,16 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
       break;
   }
 
+  /* 
+   * If the junction is visited for the first time, it will pick one walkable 
+   * path that is not the path it came from (in my implementation, favoring 
+   * front over left over right). If the junction is not visited for the first 
+   * time, we then look at how many times the entered path has been visited. 
+   * If the entered path has only one visit, we then return from the entered path. 
+   * Else if the entered path has more than 1 visit, we then pick from the other 
+   * walkable paths a path that is visited the least number of times (again, 
+   * favoring front over left over right).
+   */
   if (first_time) {
     if (atPath(front_orient)) {
       next_path = FRONT_P;
@@ -262,6 +283,7 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
     }
   }
 
+  /* update path visits for the exiting path */
   switch (path_orient) {
     case (left):
       junction_map[turtle_coord.row][turtle_coord.col].left_count += 1;
@@ -355,14 +377,17 @@ static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
 turtleMove studentTurtleStep() {
   turtleMove next_move;
 
-  // TODO: update comments
   /*
   * Decides next movement of turtle before transitioning state
   * with the states in the "state machine" being: 
   * 0. STOP. No movement
-  * 1. RIGHT. turn right 
+  * 1. MOVE. step 1 block forward 
   * 2. LEFT. turn left
-  * 3. MOVE. step 1 block forward
+  * 3. LEFT. step 1 block forward
+  * 4. LEFT. turn left
+  * 5. RIGHT. turn right
+  * 6. STOP. No movement
+  * 7. STOP. No movement
   * State 1 is the entry point of this "state machine".
   */
   switch (turtle_state)
@@ -372,7 +397,8 @@ turtleMove studentTurtleStep() {
       break;
     case S_1:
       next_move = MOVE;
-      visitUpdate(map_orient);
+      turtle_coord = orientedCoord(turtle_orient);
+      visitInc();
       break;
     case S_2:
       next_move = LEFT;
@@ -414,41 +440,49 @@ turtleMove studentTurtleStep() {
  * Output: visit_count  number of visits after transit
  */
 int32_t studentTurtleTransit(bool bumped, bool goal) {
-  // TODO: update comments
   static int32_t turn_count = 0;
   bool first_time = firstVisit();
 
   /*
   * State of turtle is updated once with every call to studentTurtleStep, 
   * with the states in the "state machine" being: 
-  * 0. STOP. always stay in current state.
-  * 1. RIGHT. will move forward next if not bumped. else turn left 
-  * 2. LEFT. will move forward next if not bumped. else turn left 
-  * 3. MOVE. will stop if at goal. else turn right
-  * State 1 is the entry point of this "state machine".
+  * 0. At Goal. always stay in current state.
+  * 1. Step. will test junction if stepped in block for the first time. Else 
+  *          move according to block type. 
+  * 2. Test Junction. will turn left until 4 directions tested and block types 
+  *                   recorded. 
+  * 3. Turn Around. will turn left until turned around.
+  * 4. Left Path. Will turn to the left path and move forward next.
+  * 5. Right Path. Will turn to the right path and move forward next.
+  * 6. Init stage. Decide movement based on whether at goal.
+  * 7. At Junc. Will update junction map  and choose next path.
+  * State 6 is the entry point of this "state machine".
   */
   switch (turtle_state)
   {
+    /* State S_0: at goal */
     case S_0:
       /* state transition */
-      turtle_state = S_0;
+      turtle_state = S_0;   // T0
       break;
 
+    /* State S_1: step */
     case S_1:
     {
       /* side effects */
       turn_count = 0;
       /* state transition */
       block_type curr_type = junction_map[turtle_coord.row][turtle_coord.col].curr_block;
-      if (first_time && goal) turtle_state = S_0;
-      else if (first_time && !goal) turtle_state = S_2;
-      else if (!first_time && curr_type == BLOCK) turtle_state = S_3;
-      else if (!first_time && curr_type == PATH) turtle_state = S_1;
-      else if (!first_time && curr_type == JUNC) turtle_state = S_7;
+      if (first_time && goal) turtle_state = S_0;                         // T1
+      else if (first_time && !goal) turtle_state = S_2;                   // T2
+      else if (!first_time && curr_type == BLOCK) turtle_state = S_3;     // T3
+      else if (!first_time && curr_type == PATH) turtle_state = S_1;      // T4
+      else if (!first_time && curr_type == JUNC) turtle_state = S_7;      // T5
       else ROS_ERROR("Unlisted combination at S1");
       break;
     }
 
+    /* State S_2: test junction */
     case S_2:
     {
       /* side effects */
@@ -456,49 +490,54 @@ int32_t studentTurtleTransit(bool bumped, bool goal) {
       juncUpdate(map_orient, bumped, turn_count);
       /* state transition */
       block_type curr_type = junction_map[turtle_coord.row][turtle_coord.col].curr_block;
-      if (turn_count != 0) turtle_state = S_2;
-      else if (turn_count == 0 && curr_type == BLOCK) turtle_state = S_3;
-      else if (turn_count == 0 && curr_type == PATH) turtle_state = S_1;
-      else if (turn_count == 0 && curr_type == JUNC) turtle_state = S_7;
+      if (turn_count != 0) turtle_state = S_2;                              // T6
+      else if (turn_count == 0 && curr_type == BLOCK) turtle_state = S_3;   // T7
+      else if (turn_count == 0 && curr_type == PATH) turtle_state = S_1;    // T8
+      else if (turn_count == 0 && curr_type == JUNC) turtle_state = S_7;    // T9
       else ROS_ERROR("Unlisted combination at S2");
       break;
     }
 
+    /* State S_3: turn around */
     case S_3:
       /* side effects */
       turn_count = turn_count+1;
       /* state transition */
-      if (turn_count != 2) turtle_state = S_3;
-      else if (turn_count == 2) turtle_state = S_1;
+      if (turn_count != 2) turtle_state = S_3;        // T10
+      else if (turn_count == 2) turtle_state = S_1;   // T11
       else ROS_ERROR("Unlisted combination at S3");
       break;
 
+    /* State S_4: left path */
     case S_4:
       /* state transition */
-      turtle_state = S_1;
+      turtle_state = S_1;       // T12
       break;
 
+    /* State S_5: right path */
     case S_5:
       /* state transition */
-      turtle_state = S_1;
+      turtle_state = S_1;       // T13
       break;
 
+    /* State S_6: initial stage */
     case S_6:
       /* state transition */
-      if (goal) turtle_state = S_0;
-      else if (!goal) turtle_state = S_2;
+      if (goal) turtle_state = S_0;         // T14
+      else if (!goal) turtle_state = S_2;   // T15
       else ROS_ERROR("Unlisted combination at S6");  
       break;
 
+    /* State S_7: at junc */
     case S_7:
     {
       /* side effects */
       path_type next_path = pickPath(map_orient, first_time);
       /* state transitions */
-      if (next_path == FRONT_P) turtle_state = S_1;
-      else if (next_path == LEFT_P) turtle_state = S_4;
-      else if (next_path == RIGHT_P) turtle_state = S_5;
-      else if (next_path == BACK_P) turtle_state = S_3;
+      if (next_path == FRONT_P) turtle_state = S_1;         // T16
+      else if (next_path == LEFT_P) turtle_state = S_4;     // T17
+      else if (next_path == RIGHT_P) turtle_state = S_5;    // T18
+      else if (next_path == BACK_P) turtle_state = S_3;     // T19
       else ROS_ERROR("Unlisted combination at S7");
       break;
     }
