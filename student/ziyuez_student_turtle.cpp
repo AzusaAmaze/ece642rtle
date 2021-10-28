@@ -128,8 +128,8 @@ static map_pos_t orientedCoord(int32_t turtle_orient) {
  * Output: bool           whether oriented block is a path
  */
 static bool atPath(int32_t turtle_orient) {
-  block_type oriented_block;
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
+  block_type oriented_block = curr_info.curr_block;
   switch (turtle_orient) {
     case(left): 
       oriented_block = curr_info.left_block;
@@ -158,7 +158,7 @@ static bool atPath(int32_t turtle_orient) {
  * Output: path_count     number of times path is visited
  */
 static int32_t visitPath(int32_t turtle_orient) {
-  int32_t path_count;
+  int32_t path_count = -1;
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
   switch (turtle_orient) {
     case(left): 
@@ -191,7 +191,11 @@ static int32_t visitPath(int32_t turtle_orient) {
  * Output: next_path      type of the path to be taken
  */
 static path_type pickPath(int32_t turtle_orient, bool first_time) {
-  int32_t front_orient, back_orient, left_orient, right_orient, path_orient;
+  int32_t front_orient = turtle_orient; 
+  int32_t back_orient = turtle_orient; 
+  int32_t left_orient = turtle_orient;
+  int32_t right_orient = turtle_orient; 
+  int32_t path_orient = turtle_orient;
   path_type next_path;
 
   /* pick path based on junction map and number of visits at junction */
@@ -316,7 +320,6 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
  *        turn_count    number of times turtle turned at current block
  */
 static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
-  map_pos_t path_coord = orientedCoord(turtle_orient);
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
 
   if (turn_count == 1) curr_info.curr_block = BLOCK;
@@ -375,7 +378,7 @@ static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
  * Output: next turtle movement to be performed by maze methods
  */
 turtleMove studentTurtleStep() {
-  turtleMove next_move;
+  turtleMove next_move = STOP;
 
   /*
   * Decides next movement of turtle before transitioning state
@@ -532,7 +535,8 @@ int32_t studentTurtleTransit(bool bumped, bool goal) {
     case S_7:
     {
       /* side effects */
-      path_type next_path = pickPath(map_orient, first_time);
+      path_type next_path;
+      next_path = pickPath(map_orient, first_time);
       /* state transitions */
       if (next_path == FRONT_P) turtle_state = S_1;         // T16
       else if (next_path == LEFT_P) turtle_state = S_4;     // T17

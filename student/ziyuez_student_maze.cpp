@@ -36,12 +36,12 @@ const uint32_t timeout = 5;    // bigger number slows down simulation so you can
  *        turtle_orient turtle orientation
  * Output: whether turtle is facing a wall
  */
-static bool isBumped(QPointF turtle_pos, int turtle_orient) {
+static bool isBumped(turtle_pospair_t curr_pos, int turtle_orient) {
   turtle_pospair_t pos1, pos2;
-  pos1.x = turtle_pos.x(); 
-  pos1.y = turtle_pos.y();
-  pos2.x = turtle_pos.x(); 
-  pos2.y = turtle_pos.y();
+  pos1.x = curr_pos.x; 
+  pos1.y = curr_pos.y;
+  pos2.x = curr_pos.x; 
+  pos2.y = curr_pos.y;
 
   switch (turtle_orient) {
     case(left): 
@@ -103,7 +103,7 @@ static QPointF stepForward(QPointF turtle_pos, int32_t turtle_orient) {
  * Output: turtle orientation after turn
  */
 int32_t turnRight(int32_t turtle_orient) {
-  int32_t result_orient;
+  int32_t result_orient = turtle_orient;
   switch (turtle_orient) {
     case(left): 
       result_orient = up;
@@ -131,7 +131,7 @@ int32_t turnRight(int32_t turtle_orient) {
  * Output: turtle orientation after turn
  */
 int32_t turnLeft(int32_t turtle_orient) {
-  int32_t result_orient;
+  int32_t result_orient = turtle_orient;
   switch (turtle_orient) {
     case(left): 
       result_orient = down;
@@ -191,7 +191,7 @@ QPointF translatePos(QPointF pos_, int32_t orientation, turtleMove next_move) {
  * Output: turtle orientation after turn
  */
 int32_t translateOrnt(int32_t orientation, turtleMove next_move) {
-  int32_t result_orient;
+  int32_t result_orient = orientation;
   switch (next_move) {
     case LEFT:
       result_orient = turnLeft(orientation);
@@ -233,8 +233,11 @@ bool moveTurtle(QPointF& pos_, int& nw_or)
     nw_or = translateOrnt(nw_or, next_move);
 
     // after performing movement, test conditions;
-    bool bumped = isBumped(pos_, nw_or);
-    bool goal = atend(pos_.x(), pos_.y());
+    turtle_pospair_t curr_pos;
+    curr_pos.x = int32_t(pos_.x() + 0.5 - (pos_.x() < 0)); 
+    curr_pos.y = int32_t(pos_.y() + 0.5 - (pos_.y() < 0));
+    bool bumped = isBumped(curr_pos, nw_or);
+    bool goal = atend(curr_pos.x, curr_pos.y);
 
     // update state & visit map by calling student_turtle methods
     int32_t visit_count = studentTurtleTransit(bumped, goal);
