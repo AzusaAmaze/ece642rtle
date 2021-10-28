@@ -196,7 +196,7 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
   int32_t left_orient = turtle_orient;
   int32_t right_orient = turtle_orient; 
   int32_t path_orient = turtle_orient;
-  path_type next_path;
+  path_type next_path = FRONT_P;
 
   /* pick path based on junction map and number of visits at junction */
   switch (turtle_orient) {
@@ -400,7 +400,7 @@ turtleMove studentTurtleStep() {
       break;
     case S_1:
       next_move = MOVE;
-      turtle_coord = orientedCoord(turtle_orient);
+      turtle_coord = orientedCoord(map_orient);
       visitInc();
       break;
     case S_2:
