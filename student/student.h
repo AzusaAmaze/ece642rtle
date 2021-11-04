@@ -49,8 +49,7 @@ typedef struct map_pos {
 typedef enum {
   BLOCK = 0,
   JUNC = 1, 
-  PATH = 2, 
-  ERR_DEFAULT
+  PATH = 2
 } block_type;
 
 typedef struct block_info {
@@ -69,8 +68,7 @@ typedef enum {
   FRONT_P, 
   BACK_P, 
   LEFT_P, 
-  RIGHT_P, 
-  ERR_DEFAULT
+  RIGHT_P
 } path_type;
 
 QPointF translatePos(QPointF pos_, int32_t orientation, turtleMove next_move);

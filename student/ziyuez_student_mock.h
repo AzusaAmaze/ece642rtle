@@ -4,13 +4,13 @@
  */
 
 #include <iostream>
+#include <boost/bind.hpp>
 
 typedef enum {
   LEFT, 
   RIGHT, 
   MOVE, 
-  STOP, 
-  ERR_DEFAULT
+  STOP
 } turtleMove;
 
 typedef enum {
@@ -21,16 +21,14 @@ typedef enum {
   S_4, 
   S_5, 
   S_6, 
-  S_7, 
-  ERR_DEFAULT
+  S_7
 } states;
 
 typedef enum : int32_t {
   left=0, 
   up=1, 
   right=2, 
-  down=3, 
-  ERR_DEFAULT
+  down=3
 } directions;  // turtle directions
 
 typedef struct map_pos {
@@ -41,8 +39,7 @@ typedef struct map_pos {
 typedef enum {
   BLOCK = 0,
   JUNC = 1, 
-  PATH = 2, 
-  ERR_DEFAULT
+  PATH = 2
 } block_type;
 
 typedef struct block_info {
@@ -61,8 +58,7 @@ typedef enum {
   FRONT_P, 
   BACK_P, 
   LEFT_P, 
-  RIGHT_P, 
-  ERR_DEFAULT
+  RIGHT_P
 } path_type;
 
 

@@ -45,7 +45,7 @@ void setOrient(int32_t new_orient) {
 
 
 int32_t getOrient() {
-  return turtle_orient;
+  return map_orient;
 }
 
 
@@ -296,7 +296,6 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
         next_path = RIGHT_P;
         path_orient = right_orient;
       } else {
-        ROS_ERROR("counts %d %d %d %d", visitPath(front_orient), visitPath(back_orient), visitPath(left_orient), visitPath(right_orient));
         ROS_ERROR("Unable to find walkable path at junction!");
       }
     }
@@ -507,25 +506,6 @@ turtleMove studentTurtleStep() {
 }
 
 
-/* 
- * This procedure decides the next state of turtle based on the current
- * state and conditions. Always called after studentTurtleTransit() 
- * in each time cycle.
- * Input:  bumped       if turtle is facing a wall
- *         goal         if turtle is at goal
- * Output: visit_count  number of visits after transit
- */
-int32_t studentTurtleTransit(bool bumped, bool goal) {
-  static int32_t turn_count = 0;
-  bool first_time = firstVisit();
-
-  turn_count = turtleStateTransit(turn_count, first_time, bumped, goal);
-
-  int32_t visit_count = visitGet(turtle_coord);
-  return visit_count;
-}
-
-
 // TODO: add comment
 int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, bool goal) {
   /*
@@ -633,4 +613,23 @@ int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, boo
       break;
   }
   return turn_count;
+}
+
+
+/* 
+ * This procedure decides the next state of turtle based on the current
+ * state and conditions. Always called after studentTurtleTransit() 
+ * in each time cycle.
+ * Input:  bumped       if turtle is facing a wall
+ *         goal         if turtle is at goal
+ * Output: visit_count  number of visits after transit
+ */
+int32_t studentTurtleTransit(bool bumped, bool goal) {
+  static int32_t turn_count = 0;
+  bool first_time = firstVisit();
+
+  turn_count = turtleStateTransit(turn_count, first_time, bumped, goal);
+
+  int32_t visit_count = visitGet(turtle_coord);
+  return visit_count;
 }

@@ -5,7 +5,7 @@
  * dummy turtle statechart. It uses the CUnit framework (cunit.sourceforge.net)
  */
 
-#include "student_mock.h"
+#include "ziyuez_student_mock.h"
 #include <CUnit/Basic.h>
 
 /*
@@ -39,7 +39,7 @@ void test_t1() {
   juncSet({13,13}, {BLOCK, BLOCK, BLOCK, BLOCK, BLOCK, 0, 0, 0, 0});
 
   turtleMove next_move = studentTurtleStep();
-  mock_count = turtleStateTransit(mock_count, bool first_time, bool bumped, bool goal);
+  mock_count = turtleStateTransit(mock_count, false, false, true);
 
   states new_state = getState();
   int32_t new_orient = getOrient();
