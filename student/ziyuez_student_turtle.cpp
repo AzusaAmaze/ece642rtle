@@ -335,7 +335,9 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
  */
 static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
+  block_type faced_block = BLOCK;
 
+  if (!bumped) faced_block = PATH;
   if (turn_count == 1) curr_info.curr_block = BLOCK;
   /*
    * Update walkable path by checking whether faced block is obstructed.
@@ -344,32 +346,16 @@ static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
    */
   switch (turtle_orient) {
     case(left): 
-      if (!bumped) {
-        curr_info.left_block = PATH;
-      } else {
-        curr_info.left_block = BLOCK;
-      }
+      curr_info.left_block = faced_block;
       break;
     case(up):
-      if (!bumped) {
-        curr_info.up_block = PATH;
-      } else {
-        curr_info.up_block = BLOCK;
-      }
+      curr_info.up_block = faced_block;
       break;
     case(right):
-      if (!bumped) {
-        curr_info.right_block = PATH;
-      } else {
-        curr_info.right_block = BLOCK;
-      }
+      curr_info.right_block = faced_block;
       break;
     case(down):
-      if (!bumped) {
-        curr_info.down_block = PATH;
-      } else {
-        curr_info.down_block = BLOCK;
-      }
+      curr_info.down_block = faced_block;
       break;
     default:
       ROS_ERROR("Unrecognized turtle orientation");
