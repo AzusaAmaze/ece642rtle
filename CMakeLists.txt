@@ -54,7 +54,7 @@ set(monitor_TARGETS_SRCS
   "ece642rtle_turn_monitor monitors/ziyuez_turn_monitor.cpp"
   "ece642rtle_tick_monitor monitors/ziyuez_tick_monitor.cpp"
   "ece642rtle_forward_monitor monitors/ziyuez_forward_monitor.cpp"
-  # "ece642rtle_wall_monitor monitors/ziyuez_wall_monitor.cpp"
+  "ece642rtle_wall_monitor monitors/ziyuez_wall_monitor.cpp"
   "ece642rtle_face_monitor monitors/ziyuez_face_monitor.cpp"
   "ece642rtle_solved_monitor monitors/ziyuez_solved_monitor.cpp"
   "ece642rtle_atend_monitor monitors/ziyuez_atend_monitor.cpp"

@@ -1,5 +1,6 @@
 /*
  * Code by Milda Zizyte
+ * Modified by Ziyue Zhang on Nov 22, 2021
  *
  * Interface of ece642rtle system ROS message interrupt handling
  * intended to be used for runtime monitoring
@@ -17,7 +18,11 @@
 // (x,y) coordinates of a turtle pose
 typedef struct{int x; int y;} Pose;
 // endpoints of a potential wall segment
-typedef struct {int x1; int y1; int x2; int y2;} Endpoints;
+typedef struct Endpoints_t {int x1; int y1; int x2; int y2;
+  bool operator < (const Endpoints_t E) const {
+    return x1 < E.x1;
+  };
+} Endpoints;
 /*
  * Relationship between pose and endpoints: 
  *   (x,y)+-----+(x+1,y)

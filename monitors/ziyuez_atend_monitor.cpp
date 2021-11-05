@@ -16,21 +16,10 @@
 static Pose last_pose;
 static bool moved = false;
 
-// Flag that doesn't print pose updates if the turtle has moved 0 steps
-static const bool suppress_double_visits = true;
-
 /*
  * Updates previous pose
  */
 void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
-  // Print pose info
-  // Last conditional makes sure that if suppress_double_visits is
-  // true, that the same pose isn't printed twice
-  if (!suppress_double_visits || !moved ||
-      (last_pose.x != x || last_pose.y != y)) {
-    ROS_INFO("[[%ld ns]] 'Pose' was sent. Data: x = %d, y=%d", t.toNSec(), x, y);
-  }
-
   // store last Pose in memory
   last_pose.x = x;
   last_pose.y = y;

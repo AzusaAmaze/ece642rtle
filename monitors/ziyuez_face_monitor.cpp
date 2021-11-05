@@ -18,9 +18,6 @@ static Pose last_pose;
 static Orientation last_orient;
 static bool moved = false;
 
-// Flag that doesn't print pose updates if the turtle has moved 0 steps
-static const bool suppress_double_visits = true;
-
 /*
  * Calculates the end point between two positions following 
  * "(y1==y2 && x1 < x2) || (x1==x2 && y1 < y2)"
@@ -44,32 +41,6 @@ Endpoints wallBetween(Pose p1, Pose p2) {
  * Whenever called, updates last turtle position and orientation
  */
 void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
-  // Print pose info
-  // Last conditional makes sure that if suppress_double_visits is
-  // true, that the same pose isn't printed twice
-  std::string o_str;
-  switch(o) {
-  case NORTH:
-    o_str = "NORTH";
-    break;
-  case WEST:
-    o_str = "WEST";
-    break;
-  case SOUTH:
-    o_str = "SOUTH";
-    break;
-  case EAST:
-    o_str = "EAST";
-    break;
-  default:
-    o_str = "ERROR";
-    break;
-  }
-  if (!suppress_double_visits || !moved ||
-      (last_pose.x != x || last_pose.y != y || last_orient != o)) {
-    ROS_INFO("[[%ld ns]] 'Pose' was sent. Data: x=%d, y=%d, o=%s", t.toNSec(), x, y, o_str.c_str());
-  }
-
   // store last Pose in memory
   last_pose.x = x;
   last_pose.y = y;

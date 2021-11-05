@@ -1,7 +1,7 @@
 /*
  * Code by Ziyue Zhang
  * ANDREW ID: ziyuez
- * LAST UPDATE: Nov 20, 2021
+ * LAST UPDATE: Nov 22, 2021
  *
  * This monitor checks that the invariant "the turtle shall not go through 
  * walls" is not violated.
@@ -46,18 +46,14 @@ Endpoints wallBetween(Pose p1, Pose p2) {
  * Prints positional changes and checks whether invariant is violated
  */
 void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
-  // Print pose info
-  // Last conditional makes sure that if suppress_double_visits is
-  // true, that the same pose isn't printed twice
-  if (!suppress_double_visits || !moved ||
-      (last_pose.x != x || last_pose.y != y)) {
-    ROS_INFO("[[%ld ns]] 'Pose' was sent. Data: x = %d, y=%d", t.toNSec(), x, y);
-  }
-
   // checks whether the movement edge is recorded in the wall dictionary
   // and whether a wall is not present
   if (moved && (last_pose.x != x || last_pose.y != y)) {
-    Endpoints edge = wallBetween(last_pose, {x, y});
+    Endpoints edge;
+    if (x < last_pose.x) edge = wallBetween(last_pose, {last_pose.x, last_pose.y+1});
+    else if (x > last_pose.x) edge = wallBetween({last_pose.x+1, last_pose.y}, {last_pose.x+1, last_pose.y+1});
+    else if (y < last_pose.y) edge = wallBetween(last_pose, {last_pose.x+1, last_pose.y});
+    else edge = wallBetween({last_pose.x, last_pose.y+1}, {last_pose.x+1, last_pose.y+1});
     std::map<Endpoints, bool>::iterator it = wall_map.find(edge);
     if(it == wall_map.end()) {
       ROS_WARN("VIOLATION: Wall not checked between last postion (%d,%d) and current coordinate (%d,%d)", last_pose.x, last_pose.y, x, y);

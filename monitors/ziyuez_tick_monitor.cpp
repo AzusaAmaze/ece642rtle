@@ -28,7 +28,6 @@ void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
  * Checks whether each interrupt is called more than once
  */
 void tickInterrupt(ros::Time t) {
-  ROS_INFO("[[%ld ns]] new tick, checking interrupt counts");
   // Check the corresponding count for each interrupt and print warning 
   // if greater than 1
   if (pose_count > 1) {

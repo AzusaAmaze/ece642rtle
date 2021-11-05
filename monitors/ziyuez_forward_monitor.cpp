@@ -19,9 +19,6 @@ static Pose last_pose;
 static Orientation last_orient;
 static bool moved = false;
 
-// Flag that doesn't print pose updates if the turtle has not moved
-static const bool suppress_double_visits = true;
-
 /*
  * Whenever the turtle moves or turns, compare the current orientation
  * to the previous orientation and orientation to previous orientation 
@@ -29,9 +26,6 @@ static const bool suppress_double_visits = true;
  * direction it is moving
  */
 void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
-  // Print pose info
-  // Last conditional makes sure that if suppress_double_visits is
-  // true, that the same pose isn't printed twice
   std::string o_str;
   switch(o) {
   case NORTH:
@@ -49,10 +43,6 @@ void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
   default:
     o_str = "ERROR";
     break;
-  }
-  if (!suppress_double_visits || !moved || last_orient != o ||
-      (last_pose.x != x || last_pose.y != y)) {
-    ROS_INFO("[[%ld ns]] 'Pose' was sent. Data: x=%d, y=%d, o=%s", t.toNSec(), x, y, o_str.c_str());
   }
 
   // Check that the turtle has turned before and that the turtle does not 
