@@ -179,6 +179,8 @@ bool moveTurtle(QPointF& pos_, int& nw_or)
     bool goal = atend(curr_pos.x, curr_pos.y);
     studentTurtleTransit(bumped, goal);
 
+    usleep(1000);
+
     // turtle get the next movement
     turtleMove next_move = studentTurtleStep();
     pos_ = translatePos(pos_, nw_or, next_move);
