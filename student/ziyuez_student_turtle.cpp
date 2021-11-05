@@ -526,10 +526,9 @@ int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, boo
       block_type curr_type = junction_map[turtle_coord.row][turtle_coord.col].curr_block;
       if (first_time && goal) turtle_state = S_0;                         // T1
       else if (first_time && !goal) turtle_state = S_2;                   // T2
-      else if (!first_time && curr_type == BLOCK) turtle_state = S_3;     // T3
-      else if (!first_time && curr_type == PATH) turtle_state = S_1;      // T4
-      else if (!first_time && curr_type == JUNC) turtle_state = S_7;      // T5
-      else ROS_ERROR("Unlisted combination at S1");
+      else if (curr_type == BLOCK) turtle_state = S_3;                    // T3
+      else if (curr_type == PATH) turtle_state = S_1;                     // T4
+      else turtle_state = S_7;                                            // T5
       break;
     }
 
@@ -542,10 +541,9 @@ int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, boo
       /* state transition */
       block_type curr_type = junction_map[turtle_coord.row][turtle_coord.col].curr_block;
       if (turn_count != 0) turtle_state = S_2;                              // T6
-      else if (turn_count == 0 && curr_type == BLOCK) turtle_state = S_3;   // T7
-      else if (turn_count == 0 && curr_type == PATH) turtle_state = S_1;    // T8
-      else if (turn_count == 0 && curr_type == JUNC) turtle_state = S_7;    // T9
-      else ROS_ERROR("Unlisted combination at S2");
+      else if (curr_type == BLOCK) turtle_state = S_3;                      // T7
+      else if (curr_type == PATH) turtle_state = S_1;                       // T8
+      else turtle_state = S_7;                                              // T9
       break;
     }
 
@@ -555,8 +553,7 @@ int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, boo
       turn_count = turn_count+1;
       /* state transition */
       if (turn_count != 2) turtle_state = S_3;        // T10
-      else if (turn_count == 2) turtle_state = S_1;   // T11
-      else ROS_ERROR("Unlisted combination at S3");
+      else turtle_state = S_1;                        // T11
       break;
 
     /* State S_4: left path */
