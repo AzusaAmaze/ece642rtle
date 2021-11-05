@@ -42,7 +42,7 @@ void test_t0() {
   setState(S_0);
   setCoord({13,13});
   visitSet({13,13}, 1);
-  juncSet({13,13}, {BLOCK, BLOCK, BLOCK, BLOCK, BLOCK, 0, 0, 0, 0});
+  juncSet({13,13}, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, -1, -1, -1, 0});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, false, false, true);
@@ -60,7 +60,7 @@ void test_t0() {
   CU_ASSERT_EQUAL(new_coord.row, 13);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 1);
-  test_Block(new_junc, {BLOCK, BLOCK, BLOCK, BLOCK, BLOCK, 0, 0, 0, 0});
+  test_Block(new_junc, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, -1, -1, -1, 0});
 }
 
 // first_time && -- && goal @ S1
@@ -126,7 +126,7 @@ void test_t3() {
   setState(S_1);
   setCoord({13,13});
   visitSet({13,14}, 1); // one block up
-  juncSet({13,14}, {BLOCK, BLOCK, PATH, BLOCK, BLOCK, 0, 0, 0, 0});
+  juncSet({13,14}, {BLOCK, BLOCK, PATH, BLOCK, BLOCK, -1, -1, 0, -1});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, false, false, false);
@@ -144,7 +144,7 @@ void test_t3() {
   CU_ASSERT_EQUAL(new_coord.row, 13);
   CU_ASSERT_EQUAL(new_coord.col, 14);
   CU_ASSERT_EQUAL(new_visit, 2);
-  test_Block(new_junc, {BLOCK, BLOCK, PATH, BLOCK, BLOCK, 0, 0, 0, 0});
+  test_Block(new_junc, {BLOCK, BLOCK, PATH, BLOCK, BLOCK, -1, -1, 0, -1});
 }
 
 // not first_time && -- && --; curr_block = PATH @ S1
@@ -154,7 +154,7 @@ void test_t4() {
   setState(S_1);
   setCoord({13,13});
   visitSet({14,13}, 1); // one block up
-  juncSet({14,13}, {PATH, PATH, BLOCK, BLOCK, PATH, 0, 0, 0, 0});
+  juncSet({14,13}, {PATH, PATH, BLOCK, BLOCK, PATH, 0, 0, -1, -1});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, false, false, false);
@@ -172,7 +172,7 @@ void test_t4() {
   CU_ASSERT_EQUAL(new_coord.row, 14);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 2);
-  test_Block(new_junc, {PATH, PATH, BLOCK, BLOCK, PATH, 0, 0, 0, 0});
+  test_Block(new_junc, {PATH, PATH, BLOCK, BLOCK, PATH, 0, 0, -1, -1});
 }
 
 // not first_time && -- && --; curr_block = JUNC @ S1
@@ -182,7 +182,7 @@ void test_t5() {
   setState(S_1);
   setCoord({13,13});
   visitSet({14,13}, 1); // one block up
-  juncSet({14,13}, {PATH, PATH, PATH, BLOCK, JUNC, 1, 1, 0, 0});
+  juncSet({14,13}, {PATH, PATH, PATH, BLOCK, JUNC, 1, 1, 0, -1});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, false, false, false);
@@ -200,7 +200,7 @@ void test_t5() {
   CU_ASSERT_EQUAL(new_coord.row, 14);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 2);
-  test_Block(new_junc, {PATH, PATH, PATH, BLOCK, JUNC, 1, 1, 0, 0});
+  test_Block(new_junc, {PATH, PATH, PATH, BLOCK, JUNC, 1, 1, 0, -1});
 }
 
 // first_time && not bumped && --; turn_count != 0 @ S2
@@ -238,7 +238,7 @@ void test_t7() {
   setState(S_2);
   setCoord({13,13});
   visitSet({13,13}, 1); // one block up
-  juncSet({13,13}, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, 0, 0, 0, 0});
+  juncSet({13,13}, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, -1, -1, 0, 0});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, true, true, false);
@@ -256,7 +256,7 @@ void test_t7() {
   CU_ASSERT_EQUAL(new_coord.row, 13);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 1);
-  test_Block(new_junc, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, 0, 0, 0, 0});
+  test_Block(new_junc, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, -1, -1, -1, 0});
 }
 
 // first_time && not bumped && --; turn_count == 0; curr_block == PATH @ S2
@@ -266,7 +266,7 @@ void test_t8() {
   setState(S_2);
   setCoord({13,13});
   visitSet({13,13}, 1); // one block up
-  juncSet({13,13}, {BLOCK, BLOCK, PATH, BLOCK, BLOCK, 0, 0, 0, 0});
+  juncSet({13,13}, {BLOCK, BLOCK, PATH, BLOCK, BLOCK, -1, -1, 0, 0});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, true, false, false);
@@ -284,7 +284,7 @@ void test_t8() {
   CU_ASSERT_EQUAL(new_coord.row, 13);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 1);
-  test_Block(new_junc, {BLOCK, BLOCK, PATH, PATH, PATH, 0, 0, 0, 0});
+  test_Block(new_junc, {BLOCK, BLOCK, PATH, PATH, PATH, -1, -1, 0, 0});
 }
 
 // first_time && not bumped && --; turn_count == 0; curr_block == JUNC @ S2
@@ -294,7 +294,7 @@ void test_t9() {
   setState(S_2);
   setCoord({13,13});
   visitSet({13,13}, 1); // one block up
-  juncSet({13,13}, {BLOCK, PATH, PATH, BLOCK, JUNC, 0, 0, 0, 0});
+  juncSet({13,13}, {BLOCK, PATH, PATH, BLOCK, JUNC, 0, 0, 0, -1});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, true, false, false);
@@ -312,7 +312,7 @@ void test_t9() {
   CU_ASSERT_EQUAL(new_coord.row, 13);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 1);
-  test_Block(new_junc, {PATH, PATH, PATH, BLOCK, JUNC, 0, 0, 0, 0});
+  test_Block(new_junc, {PATH, PATH, PATH, BLOCK, JUNC, 0, 0, 0, -1});
 }
 
 // -- && -- && --; turn_count != 2 @ S3
@@ -322,7 +322,7 @@ void test_t10() {
   setState(S_3);
   setCoord({13,13});
   visitSet({13,13}, 1); // one block up
-  juncSet({13,13}, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, 0, 0});
+  juncSet({13,13}, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, -1, -1});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, true, false, false);
@@ -340,7 +340,7 @@ void test_t10() {
   CU_ASSERT_EQUAL(new_coord.row, 13);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 1);
-  test_Block(new_junc, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, 0, 0});
+  test_Block(new_junc, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, -1, -1});
 }
 
 // -- && -- && --; turn_count == 2 @ S3
@@ -350,7 +350,7 @@ void test_t11() {
   setState(S_3);
   setCoord({13,13});
   visitSet({13,13}, 1); // one block up
-  juncSet({13,13}, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, 0, 0});
+  juncSet({13,13}, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, -1, -1});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, true, true, false);
@@ -368,7 +368,7 @@ void test_t11() {
   CU_ASSERT_EQUAL(new_coord.row, 13);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 1);
-  test_Block(new_junc, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, 0, 0});
+  test_Block(new_junc, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, -1, -1});
 }
 
 // -- && -- && -- @ S4
@@ -378,7 +378,7 @@ void test_t12() {
   setState(S_4);
   setCoord({13,13});
   visitSet({13,13}, 1); // one block up
-  juncSet({13,13}, {PATH, BLOCK, PATH, BLOCK, JUNC, 1, 0, 1, 0});
+  juncSet({13,13}, {PATH, BLOCK, PATH, BLOCK, JUNC, 1, -1, 1, -1});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, true, true, false);
@@ -396,7 +396,7 @@ void test_t12() {
   CU_ASSERT_EQUAL(new_coord.row, 13);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 1);
-  test_Block(new_junc, {PATH, BLOCK, PATH, BLOCK, JUNC, 1, 0, 1, 0});
+  test_Block(new_junc, {PATH, BLOCK, PATH, BLOCK, JUNC, 1, -1, 1, -1});
 }
 
 // -- && -- && -- @ S5
@@ -406,7 +406,7 @@ void test_t13() {
   setState(S_5);
   setCoord({13,13});
   visitSet({13,13}, 1); // one block up
-  juncSet({13,13}, {BLOCK, PATH, PATH, BLOCK, JUNC, 0, 1, 1, 0});
+  juncSet({13,13}, {BLOCK, PATH, PATH, BLOCK, JUNC, -1, 1, 1,-1});
 
   turtleMove next_move = studentTurtleStep();
   mock_count = turtleStateTransit(mock_count, true, true, false);
@@ -424,7 +424,7 @@ void test_t13() {
   CU_ASSERT_EQUAL(new_coord.row, 13);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 1);
-  test_Block(new_junc, {BLOCK, PATH, PATH, BLOCK, JUNC, 0, 1, 1, 0});
+  test_Block(new_junc, {BLOCK, PATH, PATH, BLOCK, JUNC, -1, 1, 1, -1});
 }
 
 // -- && -- && goal @ S6

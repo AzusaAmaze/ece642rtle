@@ -142,9 +142,10 @@ static map_pos_t orientedCoord(int32_t turtle_orient) {
  * Input:  turtle_orient  orientation of turtle
  * Output: bool           whether oriented block is a path
  */
-static bool atPath(int32_t turtle_orient) {
+static int32_t atPath(int32_t turtle_orient) {
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
   block_type oriented_block = curr_info.curr_block;
+  int32_t is_path = 0;
   switch (turtle_orient) {
     case(left): 
       oriented_block = curr_info.left_block;
@@ -162,8 +163,8 @@ static bool atPath(int32_t turtle_orient) {
       ROS_ERROR("Unrecognized turtle orientation");
       break;
   }
-
-  return oriented_block == PATH;
+  if (oriented_block == PATH) is_path = 1;
+  return is_path;
 }
 
 
@@ -220,28 +221,28 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
       back_orient = right;
       left_orient = down;
       right_orient = up;
-      junction_map[turtle_coord.row][turtle_coord.col].right_count += 1;
+      junction_map[turtle_coord.row][turtle_coord.col].right_count += atPath(back_orient);
       break;
     case(up):
       front_orient = up;
       back_orient = down;
       left_orient = left;
       right_orient = right;
-      junction_map[turtle_coord.row][turtle_coord.col].down_count += 1;
+      junction_map[turtle_coord.row][turtle_coord.col].down_count += atPath(back_orient);
       break;
     case(right):
       front_orient = right;
       back_orient = left;
       left_orient = up;
       right_orient = down;
-      junction_map[turtle_coord.row][turtle_coord.col].left_count += 1;
+      junction_map[turtle_coord.row][turtle_coord.col].left_count += atPath(back_orient);
       break;
     case(down):
       front_orient = down;
       back_orient = up;
       left_orient = right;
       right_orient = left;
-      junction_map[turtle_coord.row][turtle_coord.col].up_count += 1;
+      junction_map[turtle_coord.row][turtle_coord.col].up_count += atPath(back_orient);
       break;
     default:
       ROS_ERROR("Unrecognized turtle orientation");
@@ -258,47 +259,31 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
    * walkable paths a path that is visited the least number of times (again, 
    * favoring front over left over right).
    */
-  if (first_time) {
-    if (atPath(front_orient)) {
-      next_path = FRONT_P;
-      path_orient = front_orient;
-    }
-    else if (atPath(left_orient)) {
-      next_path = LEFT_P;
-      path_orient = left_orient;
-    }
-    else {
-      next_path = RIGHT_P;
-      path_orient = right_orient;
-    }
+  int32_t front_count = visitPath(front_orient);
+  int32_t back_count = visitPath(back_orient);
+  int32_t left_count = visitPath(left_orient);
+  int32_t right_count = visitPath(right_orient);
+  int32_t min_count = -1;
+  if (right_count == -1 || (left_count != -1 && left_count <= right_count)) {
+    min_count = left_count;
+    next_path = LEFT_P;
+    path_orient = left_orient;
   } else {
-    if (visitPath(back_orient) == 1) {
-      next_path = BACK_P;
-      path_orient = back_orient;
-    } else {
-      /* pick a path with least number of visits (0 or 1) */
-      if (atPath(front_orient) && visitPath(front_orient) == 0) {
-        next_path = FRONT_P;
-        path_orient = front_orient;
-      } else if (atPath(left_orient) && visitPath(left_orient) == 0) {
-        next_path = LEFT_P;
-        path_orient = left_orient;
-      } else if (atPath(right_orient) && visitPath(right_orient) == 0) {
-        next_path = RIGHT_P;
-        path_orient = right_orient;
-      } else if (atPath(front_orient) && visitPath(front_orient) < 2) {
-        next_path = FRONT_P;
-        path_orient = front_orient;
-      } else if (atPath(left_orient) && visitPath(left_orient) < 2) {
-        next_path = LEFT_P;
-        path_orient = left_orient;
-      } else if (atPath(right_orient) && visitPath(right_orient) < 2) {
-        next_path = RIGHT_P;
-        path_orient = right_orient;
-      } else {
-        ROS_ERROR("Unable to find walkable path at junction!");
-      }
-    }
+    min_count = right_count;
+    next_path = RIGHT_P;
+    path_orient = right_orient;
+  }
+  
+  if (min_count == -1 || (front_count != -1 && front_count <= min_count)) {
+    min_count = front_count;
+    next_path = FRONT_P;
+    path_orient = front_orient;
+  }
+
+  if ((min_count == -1 || (back_count != -1 && back_count <= min_count)) || (!first_time && back_count == 1)) {
+    min_count = back_count;
+    next_path = BACK_P;
+    path_orient = back_orient;
   }
 
   /* update path visits for the exiting path */
@@ -336,8 +321,12 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
 static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
   block_type faced_block = BLOCK;
+  int32_t faced_count = -1;
 
-  if (!bumped) faced_block = PATH;
+  if (!bumped) {
+    faced_block = PATH;
+    faced_count  = 0;
+  }
   if (turn_count == 1) curr_info.curr_block = BLOCK;
   /*
    * Update walkable path by checking whether faced block is obstructed.
@@ -347,15 +336,19 @@ static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
   switch (turtle_orient) {
     case(left): 
       curr_info.left_block = faced_block;
+      curr_info.left_count = faced_count;
       break;
     case(up):
       curr_info.up_block = faced_block;
+      curr_info.up_count = faced_count;
       break;
     case(right):
       curr_info.right_block = faced_block;
+      curr_info.right_count = faced_count;
       break;
     case(down):
       curr_info.down_block = faced_block;
+      curr_info.down_count = faced_count;
       break;
     default:
       ROS_ERROR("Unrecognized turtle orientation");
