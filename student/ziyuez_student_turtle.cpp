@@ -4,7 +4,7 @@
  *
  * STUDENT NAME: Ziyue ZHANG
  * ANDREW ID: ziyuez
- * LAST UPDATE: Nov 12, 2021
+ * LAST UPDATE: Nov 21, 2021
  *
  * This file is an algorithm to solve the ece642rtle maze
  * using the right-hand rule.

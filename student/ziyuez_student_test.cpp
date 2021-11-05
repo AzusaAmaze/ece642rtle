@@ -3,7 +3,7 @@
  * 
  * Code by Ziyue Zhang
  * ANDREW ID: ziyuez
- * LAST UPDATE: Nov 12, 2021
+ * LAST UPDATE: Nov 21, 2021
  * 
  * This code exercises Transitions T0 to T19 and covers 
  * branch and data combinations
@@ -17,12 +17,13 @@
  * JuncUpdate() (branch coverage, tested at S2 & extra) ok
  * pickPath() (switch cases, if statements, tested at S7 & extra) ok
  * atPath() & visitPath() (switch cases, tested at S7 & extra) ok
- * turtleStateTransit() (test all transitions & default)
+ * turtleStateTransit() (test all transitions & default) ok
  * studentTurtleStep() (test side effects at each state & default)
  * turnLeftRight() (tested in S2, S3, S4, S5 & extra) ok
  * incPath() (tested in S7 & extra) ok
  * orientedCoord() (tested in S1 & extra) ok
-*/
+ * visitGet() (tested in extra) ok
+ */
 
 // Helper routine for testing data structure
 void test_Block(block_info_t actual, block_info_t expected) {
@@ -713,6 +714,16 @@ void test_studentTurtleStep() {
   CU_ASSERT_EQUAL(getErr(), true);
 }
 
+// test special case for visitGet
+void test_visitGet() {
+  setCoord({13, 13});
+  visitSet({13,13}, 1);
+
+  int32_t new_visit = visitGet({-1, -1});
+
+  CU_ASSERT_EQUAL(new_visit, 1);
+}
+
 // Test to attempt 100% data coverage, inputs: bumped & goal
 
 // true & true @ S0
@@ -856,6 +867,7 @@ int main() {
       (NULL == CU_add_test(pSuite, "test of juncUpdate default case", test_juncUpdate)) ||
       (NULL == CU_add_test(pSuite, "test of turtleStateTransit default case", test_turtleStateTransit)) ||
       (NULL == CU_add_test(pSuite, "test of studentTurtleStep default case", test_studentTurtleStep)) || 
+      (NULL == CU_add_test(pSuite, "test of visitGet special case", test_visitGet)) || 
       (NULL == CU_add_test(pSuite, "test of S0 data combination", test_S0_extra)) ||
       (NULL == CU_add_test(pSuite, "test of S6 data combination 1", test_S6_extra1)) ||
       (NULL == CU_add_test(pSuite, "test of S6 data combination 2", test_S6_extra2)))

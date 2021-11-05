@@ -1,7 +1,7 @@
 /*
  * Code by Ziyue Zhang
  * ANDREW ID: ziyuez
- * LAST UPDATE: Nov 20, 2021
+ * LAST UPDATE: Nov 21, 2021
  *
  * This monitor checks that the invariant "for any call to 
  * bumped(x1,y1,x2,y2), the turtle shall be facing the wall segment 
