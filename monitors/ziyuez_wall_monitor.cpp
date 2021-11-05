@@ -17,11 +17,9 @@
 static Pose last_pose;
 static bool moved = false;
 
-// Flag that doesn't print pose updates if the turtle has moved 0 steps
-static const bool suppress_double_visits = true;
-
-// Local dictionary for potential walls checked
-static std::map<Endpoints, bool> wall_map; 
+// last walls checked
+Endpoints last_edge;
+bool last_bumped = false;
 
 /*
  * Calculates the end point between two positions following 
@@ -54,10 +52,10 @@ void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
     else if (x > last_pose.x) edge = wallBetween({last_pose.x+1, last_pose.y}, {last_pose.x+1, last_pose.y+1});
     else if (y < last_pose.y) edge = wallBetween(last_pose, {last_pose.x+1, last_pose.y});
     else edge = wallBetween({last_pose.x, last_pose.y+1}, {last_pose.x+1, last_pose.y+1});
-    std::map<Endpoints, bool>::iterator it = wall_map.find(edge);
-    if(it == wall_map.end()) {
+    if(edge.x1 != last_edge.x1 || edge.x2 != last_edge.x2 ||
+       edge.y1 != last_edge.y1 || edge.y2 != last_edge.y2 ) {
       ROS_WARN("VIOLATION: Wall not checked between last postion (%d,%d) and current coordinate (%d,%d)", last_pose.x, last_pose.y, x, y);
-    } else if (wall_map[edge] == true) {
+    } else if (last_bumped == true) {
       ROS_WARN("VIOLATION: Turtle went through wall between last position (%d,%d) and current coordinate (%d,%d)", last_pose.x, last_pose.y, x, y);
     }
   }
@@ -78,7 +76,8 @@ void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
  */
 void bumpInterrupt(ros::Time t, int x1, int y1, int x2, int y2, bool bumped) {
   Endpoints edge = wallBetween({x1, y1}, {x2, y2});
-  wall_map[edge] = bumped;
+  last_edge = edge;
+  last_bumped = bumped;
 }
 
 
