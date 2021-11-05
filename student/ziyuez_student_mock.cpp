@@ -13,3 +13,11 @@ void ROS_ERROR(std::string e) {
   mock_error = true;
   std::cout << e << std::endl;
 }
+
+void setErr(bool err_val) {
+  mock_error = err_val;
+}
+
+bool getErr(){
+  return mock_error;
+}

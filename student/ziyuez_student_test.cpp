@@ -10,14 +10,14 @@
 
 /*
  * List of things to be tested: 
- * JuncUpdate() (branch coverage, tested at S2 & extra)
- * pickPath() (switch cases, if statements, tested at S7 & extra)
- * atPath() & visitPath() (switch cases, tested at S7 & extra)
- * studentTurtleTransit() (separate state machine, test all transitions & default)
- * studentTurtleStep() (separate state machine, test side effects at each state & default)
- * orientedCoord() (switch cases, tested in S1 & extra)
- * turnLeft() (tested in S2, S3, S4 & extra)
- * turnRight() (tested in S5 & extra)
+ * JuncUpdate() (branch coverage, tested at S2 & extra) ok
+ * pickPath() (switch cases, if statements, tested at S7 & extra) ok
+ * atPath() & visitPath() (switch cases, tested at S7 & extra) ok
+ * turtleStateTransit() (test all transitions & default)
+ * studentTurtleStep() (test side effects at each state & default)
+ * turnLeftRight() (tested in S2, S3, S4, S5 & extra) ok
+ * incPath() (tested in S7 & extra) ok
+ * orientedCoord() (tested in S1 & extra) ok
 */
 
 // TODO: extra test for S1 orientedCoord()
@@ -511,6 +511,34 @@ void test_t16() {
   test_Block(new_junc, {PATH, BLOCK, PATH, PATH, JUNC, 0, -1, 1, 1});
 }
 
+// first_time && -- && not goal; branch coverage for return orientation at right @ S7
+void test_t16_extra() {
+  int32_t mock_count = 0;
+  setOrient(right);
+  setState(S_7);
+  setCoord({13,13});
+  visitSet({13,13}, 1); // one block up
+  juncSet({13,13}, {BLOCK, PATH, BLOCK, PATH, JUNC, -1, 0, -1, 0});
+
+  turtleMove next_move = studentTurtleStep();
+  mock_count = turtleStateTransit(mock_count, true, false, false);
+
+  states new_state = getState();
+  int32_t new_orient = getOrient();
+  map_pos_t new_coord = getCoord();
+  int32_t new_visit = visitGet(new_coord);
+  block_info_t new_junc = juncGet(new_coord);
+
+  CU_ASSERT_EQUAL(mock_count, 0);
+  CU_ASSERT_EQUAL(next_move, STOP);
+  CU_ASSERT_EQUAL(new_state, S_1);
+  CU_ASSERT_EQUAL(new_orient, right);
+  CU_ASSERT_EQUAL(new_coord.row, 13);
+  CU_ASSERT_EQUAL(new_coord.col, 13);
+  CU_ASSERT_EQUAL(new_visit, 1);
+  test_Block(new_junc, {BLOCK, PATH, BLOCK, PATH, JUNC, -1, 0, -1, 1});
+}
+
 // first_time && -- && not goal @ S7
 void test_t17() {
   int32_t mock_count = 0;
@@ -595,6 +623,89 @@ void test_t19() {
   test_Block(new_junc, {BLOCK, PATH, PATH, PATH, JUNC, -1, 2, 1, 1});
 }
 
+// test default error case for incPath
+void test_incPath() {
+  setErr(false);
+
+  incPath(dir_err);
+
+  CU_ASSERT_EQUAL(getErr(), true);
+}
+
+// test default error case for orientedCoord
+void test_orientedCoord() {
+  setErr(false);
+
+  map_pos_t pos = orientedCoord(dir_err);
+
+  CU_ASSERT_EQUAL(getErr(), true);
+}
+
+// test default error case for atPath
+void test_atPath() {
+  setErr(false);
+
+  int32_t is_path = atPath(dir_err);
+
+  CU_ASSERT_EQUAL(getErr(), true);
+}
+
+// test default error case for visitPath
+void test_visitPath() {
+  setErr(false);
+
+  int32_t path_count = visitPath(dir_err);
+
+  CU_ASSERT_EQUAL(getErr(), true);
+}
+
+// test default error case for turnLeftRight
+void test_turnLeftRight() {
+  setErr(false);
+
+  int32_t new_orient = turnLeftRight(dir_err, true);
+
+  CU_ASSERT_EQUAL(getErr(), true);
+}
+
+// test default error case for pickPath
+void test_pickPath() {
+  setErr(false);
+
+  path_type new_path = pickPath(dir_err, true);
+
+  CU_ASSERT_EQUAL(getErr(), true);
+}
+
+// test default error case for juncUpdate
+void test_juncUpdate() {
+  setErr(false);
+
+  juncUpdate(dir_err, false, 1);
+
+  CU_ASSERT_EQUAL(getErr(), true);
+}
+
+// test default error case for turtleStateTransit
+void test_turtleStateTransit() {
+  setErr(false);
+  setState(state_err);
+
+  int32_t turn_count = turtleStateTransit(0, true, true, false);
+
+  CU_ASSERT_EQUAL(getErr(), true);
+}
+
+// test default error case for studentTurtleStep
+void test_studentTurtleStep() {
+  setErr(false);
+  setState(state_err);
+
+  turtleMove next_move = studentTurtleStep();
+
+  CU_ASSERT_EQUAL(getErr(), true);
+}
+
 int init() {
   // Any test initialization code goes here
   return 0;
@@ -639,9 +750,19 @@ int main() {
       (NULL == CU_add_test(pSuite, "test of transition T14", test_t14)) ||
       (NULL == CU_add_test(pSuite, "test of transition T15", test_t15)) ||
       (NULL == CU_add_test(pSuite, "test of transition T16", test_t16)) ||
+      (NULL == CU_add_test(pSuite, "test of transition T16 extra", test_t16_extra)) ||
       (NULL == CU_add_test(pSuite, "test of transition T17", test_t17)) ||
       (NULL == CU_add_test(pSuite, "test of transition T18", test_t18)) ||
-      (NULL == CU_add_test(pSuite, "test of transition T19", test_t19)))
+      (NULL == CU_add_test(pSuite, "test of transition T19", test_t19)) ||
+      (NULL == CU_add_test(pSuite, "test of incPath default case", test_incPath)) ||
+      (NULL == CU_add_test(pSuite, "test of orientedCoord default case", test_orientedCoord)) ||
+      (NULL == CU_add_test(pSuite, "test of atPath default case", test_atPath)) ||
+      (NULL == CU_add_test(pSuite, "test of visitPath default case", test_visitPath)) ||
+      (NULL == CU_add_test(pSuite, "test of turnLeftRight default case", test_turnLeftRight)) ||
+      (NULL == CU_add_test(pSuite, "test of pickPath default case", test_pickPath)) ||
+      (NULL == CU_add_test(pSuite, "test of juncUpdate default case", test_juncUpdate)) ||
+      (NULL == CU_add_test(pSuite, "test of turtleStateTransit default case", test_turtleStateTransit)) ||
+      (NULL == CU_add_test(pSuite, "test of studentTurtleStep default case", test_studentTurtleStep)))
     {
       CU_cleanup_registry();
       return CU_get_error();

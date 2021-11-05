@@ -21,14 +21,16 @@ typedef enum {
   S_4, 
   S_5, 
   S_6, 
-  S_7
+  S_7, 
+  state_err
 } states;
 
 typedef enum : int32_t {
   left=0, 
   up=1, 
   right=2, 
-  down=3
+  down=3, 
+  dir_err
 } directions;  // turtle directions
 
 typedef struct map_pos {
@@ -64,6 +66,7 @@ typedef enum {
 
 int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, bool goal);
 turtleMove studentTurtleStep();
+int32_t turnLeftRight(int32_t turtle_orient, bool is_left);
 
 // Functions called by main testing program to get or set values
 void setState(states new_state);
@@ -81,4 +84,16 @@ map_pos_t getCoord();
 void juncSet(map_pos_t map_coord, block_info_t new_junc);
 block_info_t juncGet(map_pos_t map_coord);
 
+// Functions called locally and by test
+void incPath(int32_t path_orient);
+map_pos_t orientedCoord(int32_t turtle_orient);
+int32_t atPath(int32_t turtle_orient);
+int32_t visitPath(int32_t turtle_orient);
+path_type pickPath(int32_t turtle_orient, bool first_time);
+void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count);
+
+// Functions implemented to replace ros library
 void ROS_ERROR(std::string e);
+
+void setErr(bool err_val);
+bool getErr();

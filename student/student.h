@@ -77,7 +77,6 @@ int32_t translateOrnt(int32_t orientation, turtleMove next_move);
 turtleMove studentTurtleStep();
 int32_t studentTurtleTransit(bool bumped, bool goal);
 
-int32_t turnRight(int32_t turtle_orient);
-int32_t turnLeft(int32_t turtle_orient);
+int32_t turnLeftRight(int32_t turtle_orient, bool is_left);
 
 

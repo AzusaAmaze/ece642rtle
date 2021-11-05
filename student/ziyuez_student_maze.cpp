@@ -138,10 +138,10 @@ int32_t translateOrnt(int32_t orientation, turtleMove next_move) {
   int32_t result_orient = orientation;
   switch (next_move) {
     case LEFT:
-      result_orient = turnLeft(orientation);
+      result_orient = turnLeftRight(orientation, true);
       break;
     case RIGHT:
-      result_orient = turnRight(orientation);
+      result_orient = turnLeftRight(orientation, false);
       break;
     case MOVE:
       result_orient = orientation;

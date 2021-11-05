@@ -85,23 +85,26 @@ int32_t visitGet(map_pos_t map_coord) {
 }
 
 
-// Functions called locally
-
-/*
- * Increases visit map count at current turtle map position
- */
-static void visitInc() {
-  // update the visit count on the new pos
-  visit_map[turtle_coord.row][turtle_coord.col] +=1;
-}
-
-
-/*
- * Return whether current turtle block is visited the first time
- * Output: bool       whether current block is visited the first time
- */
-static bool firstVisit() {
-  return visitGet(turtle_coord) == 1;
+// TODO: Add comments
+void incPath(int32_t path_orient) {
+  /* update path visits for the exiting path */
+  switch (path_orient) {
+    case (left):
+      junction_map[turtle_coord.row][turtle_coord.col].left_count += 1;
+      break;
+    case (right):
+      junction_map[turtle_coord.row][turtle_coord.col].right_count += 1;
+      break;
+    case (up):
+      junction_map[turtle_coord.row][turtle_coord.col].up_count += 1;
+      break;
+    case (down):
+      junction_map[turtle_coord.row][turtle_coord.col].down_count += 1;
+      break;
+    default: 
+      ROS_ERROR("Unrecognized path orientation");
+      break;
+  }
 }
 
 
@@ -110,7 +113,7 @@ static bool firstVisit() {
  * Input:  turtle_orient  orientation of turtle
  * Output: faced_coord    coordinates turtle facing towards
  */
-static map_pos_t orientedCoord(int32_t turtle_orient) {
+map_pos_t orientedCoord(int32_t turtle_orient) {
   map_pos_t faced_coord;
   faced_coord.row = turtle_coord.row; 
   faced_coord.col = turtle_coord.col;
@@ -142,7 +145,7 @@ static map_pos_t orientedCoord(int32_t turtle_orient) {
  * Input:  turtle_orient  orientation of turtle
  * Output: bool           whether oriented block is a path
  */
-static int32_t atPath(int32_t turtle_orient) {
+int32_t atPath(int32_t turtle_orient) {
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
   block_type oriented_block = curr_info.curr_block;
   int32_t is_path = 0;
@@ -173,7 +176,7 @@ static int32_t atPath(int32_t turtle_orient) {
  * Input:  turtle_orient  orientation of turtle
  * Output: path_count     number of times path is visited
  */
-static int32_t visitPath(int32_t turtle_orient) {
+int32_t visitPath(int32_t turtle_orient) {
   int32_t path_count = -1;
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
   switch (turtle_orient) {
@@ -206,7 +209,7 @@ static int32_t visitPath(int32_t turtle_orient) {
  *         first_time     whether junction is visited the first time
  * Output: next_path      type of the path to be taken
  */
-static path_type pickPath(int32_t turtle_orient, bool first_time) {
+path_type pickPath(int32_t turtle_orient, bool first_time) {
   int32_t front_orient = turtle_orient; 
   int32_t back_orient = turtle_orient; 
   int32_t left_orient = turtle_orient;
@@ -286,24 +289,7 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
     path_orient = back_orient;
   }
 
-  /* update path visits for the exiting path */
-  switch (path_orient) {
-    case (left):
-      junction_map[turtle_coord.row][turtle_coord.col].left_count += 1;
-      break;
-    case (right):
-      junction_map[turtle_coord.row][turtle_coord.col].right_count += 1;
-      break;
-    case (up):
-      junction_map[turtle_coord.row][turtle_coord.col].up_count += 1;
-      break;
-    case (down):
-      junction_map[turtle_coord.row][turtle_coord.col].down_count += 1;
-      break;
-    default: 
-      ROS_ERROR("Unrecognized path orientation");
-      break;
-  }
+  incPath(path_orient);
 
   return next_path;
 }
@@ -318,7 +304,7 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
  *        bumped        if turtle is facing a wall
  *        turn_count    number of times turtle turned at current block
  */
-static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
+void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
   block_type faced_block = BLOCK;
   int32_t faced_count = -1;
@@ -364,60 +350,60 @@ static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
 }
 
 
-// Functions called by maze/test
+// Functions called locally
 
 /*
- * Helper function to turn turtle orientation to the right.
- * Input: turtle_orient turtle orientation
- * Output: turtle orientation after turn
+ * Increases visit map count at current turtle map position
  */
-int32_t turnRight(int32_t turtle_orient) {
-  int32_t result_orient = turtle_orient;
-  switch (turtle_orient) {
-    case(left): 
-      result_orient = up;
-      break;
-    case(up):
-      result_orient = right;
-      break;
-    case(right):
-      result_orient = down;
-      break;
-    case(down):
-      result_orient = left;
-      break;
-    default:
-      ROS_ERROR("Unrecognized turtle orientation");
-      break;
-  }
-  return result_orient;
+static void visitInc() {
+  // update the visit count on the new pos
+  visit_map[turtle_coord.row][turtle_coord.col] +=1;
 }
 
 
 /*
- * Helper function to turn turtle orientation to the left.
+ * Return whether current turtle block is visited the first time
+ * Output: bool       whether current block is visited the first time
+ */
+static bool firstVisit() {
+  return visitGet(turtle_coord) == 1;
+}
+
+
+// Functions called by maze/test
+
+/*
+ * Helper function to turn turtle orientation to the left or right.
  * Input: turtle_orient turtle orientation
  * Output: turtle orientation after turn
  */
-int32_t turnLeft(int32_t turtle_orient) {
-  int32_t result_orient = turtle_orient;
+int32_t turnLeftRight(int32_t turtle_orient, bool is_left) {
+  int32_t left_orient = turtle_orient;
+  int32_t right_orient = turtle_orient;
   switch (turtle_orient) {
     case(left): 
-      result_orient = down;
+      right_orient = up;
+      left_orient = down;
       break;
     case(up):
-      result_orient = left;
+      right_orient = right;
+      left_orient = left;
       break;
     case(right):
-      result_orient = up;
+      right_orient = down;
+      left_orient = up;
       break;
     case(down):
-      result_orient = right;
+      right_orient = left;
+      left_orient = right;
       break;
     default:
       ROS_ERROR("Unrecognized turtle orientation");
       break;
   }
+
+  int32_t result_orient = left_orient;
+  if (!is_left) result_orient = right_orient;
   return result_orient;
 }
 
@@ -456,19 +442,19 @@ turtleMove studentTurtleStep() {
       break;
     case S_2:
       next_move = LEFT;
-      map_orient = turnLeft(map_orient);
+      map_orient = turnLeftRight(map_orient, true);
       break;
     case S_3:
       next_move = LEFT;
-      map_orient = turnLeft(map_orient);
+      map_orient = turnLeftRight(map_orient, true);
       break;
     case S_4:
       next_move = LEFT;
-      map_orient = turnLeft(map_orient);
+      map_orient = turnLeftRight(map_orient, true);
       break;
     case S_5:
       next_move = RIGHT;
-      map_orient = turnRight(map_orient);
+      map_orient = turnLeftRight(map_orient, false);
       break;
     case S_6:
       next_move = STOP;
