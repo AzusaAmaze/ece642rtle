@@ -1,6 +1,8 @@
 /*
- * 18-642 Unit Testing Example
- * Example code by Milda Zizyte
+ * 18-642 Unit Testing mock functions for ros
+ * Code by Ziyue Zhang
+ * ANDREW ID: ziyuez
+ * LAST UPDATE: Nov 12, 2021
  */
 
 #include "ziyuez_student_mock.h"

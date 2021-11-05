@@ -1,27 +1,29 @@
 /*
- * Code by Milda Zizyte
+ * Code by Ziyue Zhang
+ * ANDREW ID: ziyuez
+ * LAST UPDATE: Nov 12, 2021
  *
- * This monitor checks that the invariant "turtle shall not move more
- * than on square at a time" is not violated.
- * It keeps track of the previous position of the turtle and compares it
- * to the current position to check the invariant.
+ * This monitor checks that the invariant "turtle turns no more than 90 
+ * degrees per simulator time step" is not violated.
+ * It keeps track of the previous orientation of the turtle and compares it
+ * to the current orientation to check the invariant.
  */
 
 #include "monitor_interface.h"
 
-// TODO: fix comments
-
-// Keeps track of the last pose received
-// moved is true if at least one pose has been received, false otherwise
+// Keeps track of the last orientation received
+// turned is true if at least one pose has been received, false otherwise
 static Orientation last_orient;
 static bool turned = false;
 
-// Flag that doesn't print pose updates if the turtle has moved 0 steps
+// Flag that doesn't print pose updates if the turtle has turned 0 degrees
 static const bool suppress_double_visits = true;
 
 /*
- * Returns whether turtle performed a quarter turn
- * WARNING: unsafe for edge-case values
+ * Returns whether turtle performed less than a quarter 
+ * turn
+ * WARNING: unsafe for undefined orientation, should
+ * only be called if turtle has turned at least once
  */
 static bool isQuarter(Orientation o) {
   bool is_quarter = false;
@@ -40,7 +42,7 @@ static bool isQuarter(Orientation o) {
     is_quarter = (o != WEST);
     break;
   default:
-    ROS_INFO("[[%ld ns]] last_orient unrecognized", t.toNSec());
+    ROS_INFO("[[%ld ns]] last_orient unrecognized");
     break;
   }
 
@@ -48,9 +50,9 @@ static bool isQuarter(Orientation o) {
 }
 
 /*
- * Whenever the turtle moves, compare the current location
- * to the previous location and throw an invariant violation
- * if the locations differ by more than 1 in Manhattan Distance.
+ * Whenever the turtle moves, compare the current orientation
+ * to the previous orientation and throw an invariant violation
+ * if the orientations differ by more than 90 degrees.
  */
 void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
   // Print pose info
@@ -74,20 +76,20 @@ void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
     o_str = "ERROR";
     break;
   }
-  if (!suppress_double_visits || !moved || last_orient != o) {
+  if (!suppress_double_visits || !turned || last_orient != o) {
     ROS_INFO("[[%ld ns]] 'Pose' was sent. Data: x=%d, y=%d, o=%s", t.toNSec(), x, y, o_str.c_str());
   }
 
-  // Check that the turtle has moved before and that the Manhattan
-  // distance between the positions does not exceed 1
+  // Check that the turtle has turned before and that the degrees turned
+  // does not exceed 90
   if (turned && !isQuarter(o)) {
     ROS_WARN("VIOLATION: Turtle turned more than 90 degrees at x=%d, y=%d, o=%s", x, y, o_str.c_str());
   }
 
-  // store last Pose in memory
+  // store last orientation in memory
   last_orient = o;
 
-  // Update this flag the first time the turtle moves
+  // Update this flag the first time the turtle turns
   if (!turned) {
     turned = true;
   }

@@ -1,8 +1,12 @@
 /*
- * 18-642 Unit Testing Example
- * Example code by Milda Zizyte
- * This code exercises Transitions T1 and T2 of the Project 8
- * dummy turtle statechart. It uses the CUnit framework (cunit.sourceforge.net)
+ * 18-642 Unit Testing for turtle maze solver
+ * 
+ * Code by Ziyue Zhang
+ * ANDREW ID: ziyuez
+ * LAST UPDATE: Nov 12, 2021
+ * 
+ * This code exercises Transitions T0 to T19 and covers 
+ * branch and data combinations
  */
 
 #include "ziyuez_student_mock.h"

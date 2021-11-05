@@ -4,7 +4,7 @@
  *
  * STUDENT NAME: Ziyue Zhang
  * ANDREW ID: ziyuez
- * LAST UPDATE: 
+ * LAST UPDATE: Nov 12, 2021
  *
  * This file keeps track of where the turtle is in the maze
  * and updates the location when the turtle is moved. It shall not
