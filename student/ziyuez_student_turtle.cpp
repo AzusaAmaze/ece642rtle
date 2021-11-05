@@ -572,8 +572,7 @@ int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, boo
     case S_6:
       /* state transition */
       if (goal) turtle_state = S_0;         // T14
-      else if (!goal) turtle_state = S_2;   // T15
-      else ROS_ERROR("Unlisted combination at S6");  
+      else turtle_state = S_2;              // T15
       break;
 
     /* State S_7: at junc */
