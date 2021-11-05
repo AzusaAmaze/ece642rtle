@@ -30,6 +30,49 @@ typedef enum : int32_t {
   down=3
 } directions;  // turtle directions
 
+typedef enum {
+  S_0, 
+  S_1, 
+  S_2, 
+  S_3, 
+  S_4, 
+  S_5, 
+  S_6, 
+  S_7
+} states;
+
+typedef struct map_pos {
+  int32_t row;
+  int32_t col;
+} map_pos_t;
+
+typedef enum {
+  BLOCK = 0,
+  JUNC = 1, 
+  PATH = 2, 
+  ERR_DEFAULT
+} block_type;
+
+typedef struct block_info {
+  block_type up_block;
+  block_type down_block;
+  block_type left_block;
+  block_type right_block;
+  block_type curr_block;
+  int32_t up_count;
+  int32_t down_count;
+  int32_t left_count;
+  int32_t right_count;
+} block_info_t;
+
+typedef enum {
+  FRONT_P, 
+  BACK_P, 
+  LEFT_P, 
+  RIGHT_P, 
+  ERR_DEFAULT
+} path_type;
+
 QPointF translatePos(QPointF pos_, int32_t orientation, turtleMove next_move);
 int32_t translateOrnt(int32_t orientation, turtleMove next_move);
 

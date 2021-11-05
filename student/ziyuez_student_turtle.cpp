@@ -11,50 +11,15 @@
  *
  */
 
+#ifdef testing
+#include "ziyuez_student_mock.h"
+#endif
+#ifndef testing
 #include "student.h"
+#include "ros/ros.h"
+#endif
 
 // OK TO MODIFY BELOW THIS LINE
-
-typedef struct map_pos {
-  int32_t row;
-  int32_t col;
-} map_pos_t;
-
-typedef enum {
-  BLOCK = 0,
-  JUNC = 1, 
-  PATH = 2
-} block_type;
-
-typedef struct block_info {
-  block_type up_block;
-  block_type down_block;
-  block_type left_block;
-  block_type right_block;
-  block_type curr_block;
-  int32_t up_count;
-  int32_t down_count;
-  int32_t left_count;
-  int32_t right_count;
-} block_info_t;
-
-typedef enum {
-  FRONT_P, 
-  BACK_P, 
-  LEFT_P, 
-  RIGHT_P
-} path_type;
-
-typedef enum {
-  S_0, 
-  S_1, 
-  S_2, 
-  S_3, 
-  S_4, 
-  S_5, 
-  S_6, 
-  S_7
-} states;
 
 static states turtle_state = S_6;                   // turtle state
 static int32_t map_orient = up;                     // visit map orientation
@@ -63,21 +28,71 @@ static block_info_t junction_map[23][23] = {{BLOCK, BLOCK, BLOCK, BLOCK, BLOCK, 
 static map_pos_t turtle_coord = {11, 11};           // turtle position on visit map
 
 
-/*
- * Increases visit map count at current turtle map position
- */
-static void visitInc() {
-  // update the visit count on the new pos
-  visit_map[turtle_coord.row][turtle_coord.col] +=1;
+// TODO: Some functions that are only supposed to be called during test
+
+void setState(states new_state) {
+  turtle_state = new_state;
 }
+
+
+states getState() {
+  return turtle_state;
+}
+
+void setOrient(int32_t new_orient) {
+  map_orient = new_orient;
+}
+
+
+int32_t getOrient() {
+  return turtle_orient;
+}
+
+
+void visitSet(map_pos_t map_coord, int32_t new_visit) {
+  visit_map[map_coord.row][map_coord.col] = new_visit;
+}
+
+
+void setCoord(map_pos_t new_coord) {
+  turtle_coord = new_coord;
+}
+
+
+map_pos_t getCoord() {
+  return turtle_coord;
+}
+
+
+void juncSet(map_pos_t map_coord, block_info_t new_junc) {
+  junction_map[map_coord.row][map_coord.col] = new_junc;
+}
+
+
+block_info_t juncGet(map_pos_t map_coord) {
+  return junction_map[map_coord.row][map_coord.col];
+}
+
+// Functions called both locally and by tests
 
 /*
  * Reads map_coord and return the visit count on visit_map
  * Input:  map_coord  coordinate where we want the visit count at
  * Output: visit      count at the current turtle coordinates
  */
-static int32_t visitGet(map_pos_t map_coord) {
+int32_t visitGet(map_pos_t map_coord) {
   return visit_map[map_coord.row][map_coord.col];
+}
+
+
+// Functions called locally
+
+/*
+ * Increases visit map count at current turtle map position
+ */
+static void visitInc() {
+  // update the visit count on the new pos
+  visit_map[turtle_coord.row][turtle_coord.col] +=1;
 }
 
 
@@ -281,7 +296,7 @@ static path_type pickPath(int32_t turtle_orient, bool first_time) {
         next_path = RIGHT_P;
         path_orient = right_orient;
       } else {
-        ROS_INFO("counts %d %d %d %d", visitPath(front_orient), visitPath(back_orient), visitPath(left_orient), visitPath(right_orient));
+        ROS_ERROR("counts %d %d %d %d", visitPath(front_orient), visitPath(back_orient), visitPath(left_orient), visitPath(right_orient));
         ROS_ERROR("Unable to find walkable path at junction!");
       }
     }
@@ -371,6 +386,64 @@ static void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
 }
 
 
+// Functions called by maze/test
+
+/*
+ * Helper function to turn turtle orientation to the right.
+ * Input: turtle_orient turtle orientation
+ * Output: turtle orientation after turn
+ */
+int32_t turnRight(int32_t turtle_orient) {
+  int32_t result_orient = turtle_orient;
+  switch (turtle_orient) {
+    case(left): 
+      result_orient = up;
+      break;
+    case(up):
+      result_orient = right;
+      break;
+    case(right):
+      result_orient = down;
+      break;
+    case(down):
+      result_orient = left;
+      break;
+    default:
+      ROS_ERROR("Unrecognized turtle orientation");
+      break;
+  }
+  return result_orient;
+}
+
+
+/*
+ * Helper function to turn turtle orientation to the left.
+ * Input: turtle_orient turtle orientation
+ * Output: turtle orientation after turn
+ */
+int32_t turnLeft(int32_t turtle_orient) {
+  int32_t result_orient = turtle_orient;
+  switch (turtle_orient) {
+    case(left): 
+      result_orient = down;
+      break;
+    case(up):
+      result_orient = left;
+      break;
+    case(right):
+      result_orient = up;
+      break;
+    case(down):
+      result_orient = right;
+      break;
+    default:
+      ROS_ERROR("Unrecognized turtle orientation");
+      break;
+  }
+  return result_orient;
+}
+
+
 /* 
  * This procedure decides the next move of turtle based on the current
  * state and updates the local visit map information. Always called 
@@ -446,6 +519,15 @@ int32_t studentTurtleTransit(bool bumped, bool goal) {
   static int32_t turn_count = 0;
   bool first_time = firstVisit();
 
+  turn_count = turtleStateTransit(turn_count, first_time, bumped, goal);
+
+  int32_t visit_count = visitGet(turtle_coord);
+  return visit_count;
+}
+
+
+// TODO: add comment
+int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, bool goal) {
   /*
   * State of turtle is updated once with every call to studentTurtleStep, 
   * with the states in the "state machine" being: 
@@ -550,7 +632,5 @@ int32_t studentTurtleTransit(bool bumped, bool goal) {
       ROS_ERROR("Unrecognized turtle state");
       break;
   }
-
-  int32_t visit_count = visitGet(turtle_coord);
-  return visit_count;
+  return turn_count;
 }

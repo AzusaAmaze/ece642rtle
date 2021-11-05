@@ -98,62 +98,6 @@ static QPointF stepForward(QPointF turtle_pos, int32_t turtle_orient) {
 
 
 /*
- * Helper function to turn turtle orientation to the right.
- * Input: turtle_orient turtle orientation
- * Output: turtle orientation after turn
- */
-int32_t turnRight(int32_t turtle_orient) {
-  int32_t result_orient = turtle_orient;
-  switch (turtle_orient) {
-    case(left): 
-      result_orient = up;
-      break;
-    case(up):
-      result_orient = right;
-      break;
-    case(right):
-      result_orient = down;
-      break;
-    case(down):
-      result_orient = left;
-      break;
-    default:
-      ROS_ERROR("Unrecognized turtle orientation");
-      break;
-  }
-  return result_orient;
-}
-
-
-/*
- * Helper function to turn turtle orientation to the left.
- * Input: turtle_orient turtle orientation
- * Output: turtle orientation after turn
- */
-int32_t turnLeft(int32_t turtle_orient) {
-  int32_t result_orient = turtle_orient;
-  switch (turtle_orient) {
-    case(left): 
-      result_orient = down;
-      break;
-    case(up):
-      result_orient = left;
-      break;
-    case(right):
-      result_orient = up;
-      break;
-    case(down):
-      result_orient = right;
-      break;
-    default:
-      ROS_ERROR("Unrecognized turtle orientation");
-      break;
-  }
-  return result_orient;
-}
-
-
-/*
  * Takes a position and a turtleMove and returns a new position
  * based on the move
  * Input: pos_        turtle position
