@@ -1,3 +1,9 @@
+/*
+ * Code by Ziyue Zhang
+ * ANDREW ID: ziyuez
+ * LAST UPDATE: Nov 12, 2021
+ */
+
 #include <ros/ros.h>
 #include <boost/bind.hpp>
 #include <ece642rtle/timeInt8.h>
