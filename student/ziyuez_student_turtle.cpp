@@ -578,8 +578,7 @@ int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, boo
       if (next_path == FRONT_P) turtle_state = S_1;         // T16
       else if (next_path == LEFT_P) turtle_state = S_4;     // T17
       else if (next_path == RIGHT_P) turtle_state = S_5;    // T18
-      else if (next_path == BACK_P) turtle_state = S_3;     // T19
-      else ROS_ERROR("Unlisted combination at S7");
+      else turtle_state = S_3;                              // T19
       break;
     }
 

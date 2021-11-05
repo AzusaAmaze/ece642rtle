@@ -12,9 +12,9 @@
  * List of things to be tested: 
  * JuncUpdate() (branch coverage, tested at S2 & extra)
  * pickPath() (switch cases, if statements, tested at S7 & extra)
- * atPath() & visitPath() (switch cases)
- * studentTurtleTransit() (separate state machine, test all transitions)
- * studentTurtleStep() (separate state machine, test side effects at each state)
+ * atPath() & visitPath() (switch cases, tested at S7 & extra)
+ * studentTurtleTransit() (separate state machine, test all transitions & default)
+ * studentTurtleStep() (separate state machine, test side effects at each state & default)
  * orientedCoord() (switch cases, tested in S1 & extra)
  * turnLeft() (tested in S2, S3, S4 & extra)
  * turnRight() (tested in S5 & extra)
@@ -564,7 +564,7 @@ void test_t18() {
   CU_ASSERT_EQUAL(new_coord.row, 13);
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 3);
-  test_Block(new_junc, {PATH, PATH, PATH, BLOCK, JUNC, 3, 1, 1, 1});
+  test_Block(new_junc, {PATH, PATH, PATH, PATH, JUNC, 3, 1, 1, 1});
 }
 
 // not first_time && -- && not goal @ S7
