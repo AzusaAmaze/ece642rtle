@@ -171,20 +171,21 @@ bool moveTurtle(QPointF& pos_, int& nw_or)
   bool time_up = (timer == 0);
 
   if (time_up) {
-    // turtle get the next movement
-    turtleMove next_move = studentTurtleStep();
-    pos_ = translatePos(pos_, nw_or, next_move);
-    nw_or = translateOrnt(nw_or, next_move);
-
-    // after performing movement, test conditions;
+    // after performing movement, test conditions & update state;
     turtle_pospair_t curr_pos;
     curr_pos.x = int32_t(pos_.x() + 0.5 - (pos_.x() < 0)); 
     curr_pos.y = int32_t(pos_.y() + 0.5 - (pos_.y() < 0));
     bool bumped = isBumped(curr_pos, nw_or);
     bool goal = atend(curr_pos.x, curr_pos.y);
+    studentTurtleTransit(bumped, goal);
+
+    // turtle get the next movement
+    turtleMove next_move = studentTurtleStep();
+    pos_ = translatePos(pos_, nw_or, next_move);
+    nw_or = translateOrnt(nw_or, next_move);
 
     // update state & visit map by calling student_turtle methods
-    int32_t visit_count = studentTurtleTransit(bumped, goal);
+    int32_t visit_count = visitGet({-1, -1});
     displayVisits(visit_count);
     timer = timeout;
   } else {

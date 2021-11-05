@@ -116,16 +116,6 @@ block_info_t juncGet(map_pos_t map_coord) {
 // Functions called both locally and by tests
 
 /*
- * Reads map_coord and return the visit count on visit_map
- * Input:  map_coord  coordinate where we want the visit count at
- * Output: visit      count at the current turtle coordinates
- */
-int32_t visitGet(map_pos_t map_coord) {
-  return visit_map[map_coord.row][map_coord.col];
-}
-
-
-/*
  * Increases path count at current turtle orientation at current block
  * Input:  path_orient   orientation of path
  */
@@ -416,6 +406,21 @@ static bool firstVisit() {
 // Functions called by maze/test
 
 /*
+ * Reads map_coord and return the visit count on visit_map. If input
+ * coordinates are negative, return current turtle coordinate visit count
+ * Input:  map_coord  coordinate where we want the visit count at
+ * Output: visit      count at the current turtle coordinates
+ */
+int32_t visitGet(map_pos_t map_coord) {
+  if (map_coord.row < 0 || map_coord.col < 0) {
+    map_coord.row = turtle_coord.row;
+    map_coord.col = turtle_coord.col;
+  }
+  return visit_map[map_coord.row][map_coord.col];
+}
+
+
+/*
  * Helper function to turn turtle orientation to the left or right.
  * Input: turtle_orient turtle orientation
  * Output: turtle orientation after turn
@@ -636,12 +641,11 @@ int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, boo
  *         goal         if turtle is at goal
  * Output: visit_count  number of visits after transit
  */
-int32_t studentTurtleTransit(bool bumped, bool goal) {
+void studentTurtleTransit(bool bumped, bool goal) {
   static int32_t turn_count = 0;
   bool first_time = firstVisit();
 
   turn_count = turtleStateTransit(turn_count, first_time, bumped, goal);
 
-  int32_t visit_count = visitGet(turtle_coord);
-  return visit_count;
+  return;
 }

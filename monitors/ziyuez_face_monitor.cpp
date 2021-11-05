@@ -47,9 +47,27 @@ void poseInterrupt(ros::Time t, int x, int y, Orientation o) {
   // Print pose info
   // Last conditional makes sure that if suppress_double_visits is
   // true, that the same pose isn't printed twice
+  std::string o_str;
+  switch(o) {
+  case NORTH:
+    o_str = "NORTH";
+    break;
+  case WEST:
+    o_str = "WEST";
+    break;
+  case SOUTH:
+    o_str = "SOUTH";
+    break;
+  case EAST:
+    o_str = "EAST";
+    break;
+  default:
+    o_str = "ERROR";
+    break;
+  }
   if (!suppress_double_visits || !moved ||
-      (last_pose.x != x || last_pose.y != y)) {
-    ROS_INFO("[[%ld ns]] 'Pose' was sent. Data: x = %d, y=%d", t.toNSec(), x, y);
+      (last_pose.x != x || last_pose.y != y || last_orient != o)) {
+    ROS_INFO("[[%ld ns]] 'Pose' was sent. Data: x=%d, y=%d, o=%s", t.toNSec(), x, y, o_str.c_str());
   }
 
   // store last Pose in memory
@@ -72,16 +90,16 @@ void bumpInterrupt(ros::Time t, int x1, int y1, int x2, int y2, bool bumped) {
 
   switch(last_orient) {
     case NORTH:
-      faced_e = wallBetween(last_pose, {last_pose.x, last_pose.y-1})
+      faced_e = wallBetween(last_pose, {last_pose.x+1, last_pose.y});
       break;
     case WEST:
-      faced_e = wallBetween(last_pose, {last_pose.x-1, last_pose.y})
+      faced_e = wallBetween(last_pose, {last_pose.x, last_pose.y+1});
       break;
     case SOUTH:
-      faced_e = wallBetween(last_pose, {last_pose.x, last_pose.y+1})
+      faced_e = wallBetween({last_pose.x, last_pose.y+1}, {last_pose.x+1, last_pose.y+1});
       break;
     case EAST:
-      faced_e = wallBetween(last_pose, {last_pose.x+1, last_pose.y})
+      faced_e = wallBetween({last_pose.x+1, last_pose.y}, {last_pose.x+1, last_pose.y+1});
       break;
     default:
       ROS_INFO("[[%ld ns]] last_orient unrecognized");
@@ -91,7 +109,9 @@ void bumpInterrupt(ros::Time t, int x1, int y1, int x2, int y2, bool bumped) {
   // if calculated segment and input segment non equal, violation
   if (moved && ((called_e.x1 != faced_e.x1)||(called_e.x2 != faced_e.x2)||
       (called_e.y1 != faced_e.y1)||(called_e.y2 != faced_e.y2))) {
-      ROS_WARN("VIOLATION: Turtle not facing wall segmeng (%d,%d) and (%d,%d)", x1, y1, x2, y2);
+      ROS_WARN("VIOLATION: Turtle not facing wall segment (%d,%d) and (%d,%d), actually facing segment (%d,%d) and (%d,%d)", 
+                x1, y1, x2, y2, 
+                faced_e.x1, faced_e.y1, faced_e.x2, faced_e.y2);
   }
 }
 
