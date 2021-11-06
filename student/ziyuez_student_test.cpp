@@ -20,9 +20,7 @@
  * orientedCoord() (tested in S1 & extra) ok
 */
 
-// TODO: extra test for S1 orientedCoord()
-// TODO: extra test for S2 updateJunc()
-
+// Helper routine for testing data structure
 void test_Block(block_info_t actual, block_info_t expected) {
   CU_ASSERT_EQUAL(actual.up_block, expected.up_block);
   CU_ASSERT_EQUAL(actual.down_block, expected.down_block);

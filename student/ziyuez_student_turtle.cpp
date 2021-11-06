@@ -28,47 +28,87 @@ static block_info_t junction_map[23][23] = {{BLOCK, BLOCK, BLOCK, BLOCK, BLOCK, 
 static map_pos_t turtle_coord = {11, 11};           // turtle position on visit map
 
 
-// TODO: Some functions that are only supposed to be called during test
+// Functions that are only supposed to be called during test (getter/setters)
 
+/*
+ * Sets current state of turtle
+ * Input:  new_state  State for the turtle to be set to
+ */
 void setState(states new_state) {
   turtle_state = new_state;
 }
 
 
+/*
+ * Gets current state of turtle
+ * Output: states     Current turtle state
+ */
 states getState() {
   return turtle_state;
 }
 
+
+/*
+ * Sets current orientation of turtle map
+ * Input:  new_orient Orientation for the turtle to be set to
+ */
 void setOrient(int32_t new_orient) {
   map_orient = new_orient;
 }
 
 
+/*
+ * Gets current orientation of turtle
+ * Output: map_orient  Current turtle orientation
+ */
 int32_t getOrient() {
   return map_orient;
 }
 
 
+/*
+ * Sets current visit count of turtle map
+ * Input:  map_coord  Map coordinates to operate on
+ *         new_orient Visit count for the map to be set to
+ */
 void visitSet(map_pos_t map_coord, int32_t new_visit) {
   visit_map[map_coord.row][map_coord.col] = new_visit;
 }
 
 
+/*
+ * Sets current coordinates of turtle map
+ * Input:  new_coord  New coordinates to be set to
+ */
 void setCoord(map_pos_t new_coord) {
   turtle_coord = new_coord;
 }
 
 
+/*
+ * Gets current coordinates of turtle
+ * Output: turtle_coord Current turtle coordinates
+ */
 map_pos_t getCoord() {
   return turtle_coord;
 }
 
 
+/*
+ * Sets current junction info of turtle map
+ * Input:  map_coord  Map coordinates to operate on
+ *         new_junc   Junction info for the map to be set to
+ */
 void juncSet(map_pos_t map_coord, block_info_t new_junc) {
   junction_map[map_coord.row][map_coord.col] = new_junc;
 }
 
 
+/*
+ * Reads map_coord and return the junction info on junction_map
+ * Input:  map_coord  coordinate where we want the visit count at
+ * Output: block_info_t  Junction info at the current turtle coordinates
+ */
 block_info_t juncGet(map_pos_t map_coord) {
   return junction_map[map_coord.row][map_coord.col];
 }
@@ -85,7 +125,10 @@ int32_t visitGet(map_pos_t map_coord) {
 }
 
 
-// TODO: Add comments
+/*
+ * Increases path count at current turtle orientation at current block
+ * Input:  path_orient   orientation of path
+ */
 void incPath(int32_t path_orient) {
   /* update path visits for the exiting path */
   switch (path_orient) {
@@ -471,7 +514,16 @@ turtleMove studentTurtleStep() {
 }
 
 
-// TODO: add comment
+/* 
+ * This procedure decides the next state of turtle based on the current
+ * state and conditions. Performs side effects before state transition
+ * in each time cycle.
+ * Input:  turn_count   number of turns before transit
+ *         first_time   if turtle enters block for the first time
+ *         bumped       if turtle is facing a wall
+ *         goal         if turtle is at goal
+ * Output: turn_count   number of turns after transit
+ */
 int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, bool goal) {
   /*
   * State of turtle is updated once with every call to studentTurtleStep, 
