@@ -11,7 +11,7 @@
 /*
  * List of things to be tested: 
  * JuncUpdate() (branch coverage, tested at S2 & extra)
- * pickPath() (switch cases, if statements)
+ * pickPath() (switch cases, if statements, tested at S7 & extra)
  * atPath() & visitPath() (switch cases)
  * studentTurtleTransit() (separate state machine, test all transitions)
  * studentTurtleStep() (separate state machine, test side effects at each state)
@@ -483,6 +483,118 @@ void test_t15() {
   test_Block(new_junc, {BLOCK, BLOCK, BLOCK, BLOCK, BLOCK, 0, 0, 0, 0});
 }
 
+// first_time && -- && not goal @ S7
+void test_t16() {
+  int32_t mock_count = 0;
+  setOrient(left);
+  setState(S_7);
+  setCoord({13,13});
+  visitSet({13,13}, 1); // one block up
+  juncSet({13,13}, {PATH, BLOCK, PATH, PATH, JUNC, 0, -1, 0, 0});
+
+  turtleMove next_move = studentTurtleStep();
+  mock_count = turtleStateTransit(mock_count, true, false, false);
+
+  states new_state = getState();
+  int32_t new_orient = getOrient();
+  map_pos_t new_coord = getCoord();
+  int32_t new_visit = visitGet(new_coord);
+  block_info_t new_junc = juncGet(new_coord);
+
+  CU_ASSERT_EQUAL(mock_count, 0);
+  CU_ASSERT_EQUAL(next_move, STOP);
+  CU_ASSERT_EQUAL(new_state, S_1);
+  CU_ASSERT_EQUAL(new_orient, left);
+  CU_ASSERT_EQUAL(new_coord.row, 13);
+  CU_ASSERT_EQUAL(new_coord.col, 13);
+  CU_ASSERT_EQUAL(new_visit, 1);
+  test_Block(new_junc, {PATH, BLOCK, PATH, PATH, JUNC, 0, -1, 1, 1});
+}
+
+// first_time && -- && not goal @ S7
+void test_t17() {
+  int32_t mock_count = 0;
+  setOrient(right);
+  setState(S_7);
+  setCoord({13,13});
+  visitSet({13,13}, 1); // one block up
+  juncSet({13,13}, {PATH, BLOCK, PATH, BLOCK, JUNC, 0, -1, 0, -1});
+
+  turtleMove next_move = studentTurtleStep();
+  mock_count = turtleStateTransit(mock_count, true, true, false);
+
+  states new_state = getState();
+  int32_t new_orient = getOrient();
+  map_pos_t new_coord = getCoord();
+  int32_t new_visit = visitGet(new_coord);
+  block_info_t new_junc = juncGet(new_coord);
+
+  CU_ASSERT_EQUAL(mock_count, 0);
+  CU_ASSERT_EQUAL(next_move, STOP);
+  CU_ASSERT_EQUAL(new_state, S_4);
+  CU_ASSERT_EQUAL(new_orient, right);
+  CU_ASSERT_EQUAL(new_coord.row, 13);
+  CU_ASSERT_EQUAL(new_coord.col, 13);
+  CU_ASSERT_EQUAL(new_visit, 1);
+  test_Block(new_junc, {PATH, BLOCK, PATH, BLOCK, JUNC, 1, -1, 1, -1});
+}
+
+// not first_time && -- && not goal @ S7
+void test_t18() {
+  int32_t mock_count = 0;
+  setOrient(down);
+  setState(S_7);
+  setCoord({13,13});
+  visitSet({13,13}, 3); // one block up
+  juncSet({13,13}, {PATH, PATH, PATH, PATH, JUNC, 2, 1, 0, 1});
+
+  turtleMove next_move = studentTurtleStep();
+  mock_count = turtleStateTransit(mock_count, false, false, false);
+
+  states new_state = getState();
+  int32_t new_orient = getOrient();
+  map_pos_t new_coord = getCoord();
+  int32_t new_visit = visitGet(new_coord);
+  block_info_t new_junc = juncGet(new_coord);
+
+  CU_ASSERT_EQUAL(mock_count, 0);
+  CU_ASSERT_EQUAL(next_move, STOP);
+  CU_ASSERT_EQUAL(new_state, S_5);
+  CU_ASSERT_EQUAL(new_orient, down);
+  CU_ASSERT_EQUAL(new_coord.row, 13);
+  CU_ASSERT_EQUAL(new_coord.col, 13);
+  CU_ASSERT_EQUAL(new_visit, 3);
+  test_Block(new_junc, {PATH, PATH, PATH, BLOCK, JUNC, 3, 1, 1, 1});
+}
+
+// not first_time && -- && not goal @ S7
+void test_t19() {
+  int32_t mock_count = 0;
+  setOrient(up);
+  setState(S_7);
+  setCoord({13,13});
+  visitSet({13,13}, 2); // one block up
+  juncSet({13,13}, {BLOCK, PATH, PATH, PATH, JUNC, -1, 0, 1, 1});
+
+  turtleMove next_move = studentTurtleStep();
+  mock_count = turtleStateTransit(mock_count, false, false, false);
+
+  states new_state = getState();
+  int32_t new_orient = getOrient();
+  map_pos_t new_coord = getCoord();
+  int32_t new_visit = visitGet(new_coord);
+  block_info_t new_junc = juncGet(new_coord);
+
+  CU_ASSERT_EQUAL(mock_count, 0);
+  CU_ASSERT_EQUAL(next_move, STOP);
+  CU_ASSERT_EQUAL(new_state, S_3);
+  CU_ASSERT_EQUAL(new_orient, up);
+  CU_ASSERT_EQUAL(new_coord.row, 13);
+  CU_ASSERT_EQUAL(new_coord.col, 13);
+  CU_ASSERT_EQUAL(new_visit, 2);
+  test_Block(new_junc, {BLOCK, PATH, PATH, PATH, JUNC, -1, 2, 1, 1});
+}
+
 int init() {
   // Any test initialization code goes here
   return 0;
@@ -525,7 +637,11 @@ int main() {
       (NULL == CU_add_test(pSuite, "test of transition T12", test_t12)) ||
       (NULL == CU_add_test(pSuite, "test of transition T13", test_t13)) ||
       (NULL == CU_add_test(pSuite, "test of transition T14", test_t14)) ||
-      (NULL == CU_add_test(pSuite, "test of transition T15", test_t15)))
+      (NULL == CU_add_test(pSuite, "test of transition T15", test_t15)) ||
+      (NULL == CU_add_test(pSuite, "test of transition T16", test_t16)) ||
+      (NULL == CU_add_test(pSuite, "test of transition T17", test_t17)) ||
+      (NULL == CU_add_test(pSuite, "test of transition T18", test_t18)) ||
+      (NULL == CU_add_test(pSuite, "test of transition T19", test_t19)))
     {
       CU_cleanup_registry();
       return CU_get_error();
