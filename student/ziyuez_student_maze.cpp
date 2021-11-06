@@ -28,7 +28,7 @@ typedef struct turtle_pospair{
   int32_t y;
 } turtle_pospair_t;
 
-const uint32_t timeout = 40;    // bigger number slows down simulation so you can see what's happening
+const uint32_t timeout = 10;    // bigger number slows down simulation so you can see what's happening
 
 /*
  * Helper function to test if turtle is bumped into wall.
@@ -179,7 +179,7 @@ bool moveTurtle(QPointF& pos_, int& nw_or)
     bool goal = atend(curr_pos.x, curr_pos.y);
     studentTurtleTransit(bumped, goal);
 
-    usleep(1000);
+    usleep(5000);
 
     // turtle get the next movement
     turtleMove next_move = studentTurtleStep();
