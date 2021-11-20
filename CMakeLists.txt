@@ -54,6 +54,7 @@ set(monitor_TARGETS_SRCS
   "ece642rtle_turn_monitor monitors/ziyuez_turn_monitor.cpp"
   "ece642rtle_tick_monitor monitors/ziyuez_tick_monitor.cpp"
   "ece642rtle_forward_monitor monitors/ziyuez_forward_monitor.cpp"
+  "ece642rtle_wall_monitor monitors/ziyuez_wall_monitor.cpp"
   )
 
 set(ece642rtle_monitor_main monitors/ros_monitor_interface.cpp)
