@@ -29,21 +29,21 @@ static bool isQuarter(Orientation o) {
   bool is_quarter = false;
 
   switch(last_orient) {
-  case NORTH:
-    is_quarter = (o != SOUTH);
-    break;
-  case WEST:
-    is_quarter = (o != EAST);
-    break;
-  case SOUTH:
-    is_quarter = (o != NORTH);
-    break;
-  case EAST:
-    is_quarter = (o != WEST);
-    break;
-  default:
-    ROS_INFO("[[%ld ns]] last_orient unrecognized");
-    break;
+    case NORTH:
+      is_quarter = (o != SOUTH);
+      break;
+    case WEST:
+      is_quarter = (o != EAST);
+      break;
+    case SOUTH:
+      is_quarter = (o != NORTH);
+      break;
+    case EAST:
+      is_quarter = (o != WEST);
+      break;
+    default:
+      ROS_INFO("[[%ld ns]] last_orient unrecognized");
+      break;
   }
 
   return is_quarter;
