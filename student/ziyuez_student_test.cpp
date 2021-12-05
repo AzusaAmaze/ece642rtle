@@ -3,7 +3,7 @@
  * 
  * Code by Ziyue Zhang
  * ANDREW ID: ziyuez
- * LAST UPDATE: Nov 21, 2021
+ * LAST UPDATE: Dec 4, 2021
  * 
  * This code exercises Transitions T0 to T19 and covers 
  * branch and data combinations
@@ -727,7 +727,7 @@ void test_visitGet() {
 // Test to attempt 100% data coverage, inputs: bumped & goal
 
 // true & true @ S0
-void test_S0_extra() {
+void test_S0_extra1() {
   int32_t mock_count = 0;
   setOrient(up);
   setState(S_0);
@@ -752,6 +752,146 @@ void test_S0_extra() {
   CU_ASSERT_EQUAL(new_coord.col, 13);
   CU_ASSERT_EQUAL(new_visit, 1);
   test_Block(new_junc, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, -1, -1, -1, 0});
+}
+
+// true & false @ S0
+void test_S0_extra2() {
+  int32_t mock_count = 0;
+  setOrient(up);
+  setState(S_0);
+  setCoord({13,13});
+  visitSet({13,13}, 1);
+  juncSet({13,13}, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, -1, -1, -1, 0});
+
+  turtleMove next_move = studentTurtleStep();
+  mock_count = turtleStateTransit(mock_count, false, true, false);
+
+  states new_state = getState();
+  int32_t new_orient = getOrient();
+  map_pos_t new_coord = getCoord();
+  int32_t new_visit = visitGet(new_coord);
+  block_info_t new_junc = juncGet(new_coord);
+
+  CU_ASSERT_EQUAL(mock_count, 0);
+  CU_ASSERT_EQUAL(next_move, STOP);
+  CU_ASSERT_EQUAL(new_state, S_0);
+  CU_ASSERT_EQUAL(new_orient, up);
+  CU_ASSERT_EQUAL(new_coord.row, 13);
+  CU_ASSERT_EQUAL(new_coord.col, 13);
+  CU_ASSERT_EQUAL(new_visit, 1);
+  test_Block(new_junc, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, -1, -1, -1, 0});
+}
+
+// false & false @ S0
+void test_S0_extra3() {
+  int32_t mock_count = 0;
+  setOrient(left);
+  setState(S_0);
+  setCoord({13,13});
+  visitSet({13,13}, 1);
+  juncSet({13,13}, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, -1, -1, -1, 0});
+
+  turtleMove next_move = studentTurtleStep();
+  mock_count = turtleStateTransit(mock_count, false, false, false);
+
+  states new_state = getState();
+  int32_t new_orient = getOrient();
+  map_pos_t new_coord = getCoord();
+  int32_t new_visit = visitGet(new_coord);
+  block_info_t new_junc = juncGet(new_coord);
+
+  CU_ASSERT_EQUAL(mock_count, 0);
+  CU_ASSERT_EQUAL(next_move, STOP);
+  CU_ASSERT_EQUAL(new_state, S_0);
+  CU_ASSERT_EQUAL(new_orient, left);
+  CU_ASSERT_EQUAL(new_coord.row, 13);
+  CU_ASSERT_EQUAL(new_coord.col, 13);
+  CU_ASSERT_EQUAL(new_visit, 1);
+  test_Block(new_junc, {BLOCK, BLOCK, BLOCK, PATH, BLOCK, -1, -1, -1, 0});
+}
+
+// true & true @ S1
+void test_S1_extra() {
+  int32_t mock_count = 2;
+  setOrient(right);
+  setState(S_1);
+  setCoord({13,13});
+  visitSet({13,14}, 1); // one block up
+  juncSet({13,14}, {BLOCK, BLOCK, PATH, BLOCK, BLOCK, -1, -1, 0, -1});
+
+  turtleMove next_move = studentTurtleStep();
+  mock_count = turtleStateTransit(mock_count, false, true, true);
+
+  states new_state = getState();
+  int32_t new_orient = getOrient();
+  map_pos_t new_coord = getCoord();
+  int32_t new_visit = visitGet(new_coord);
+  block_info_t new_junc = juncGet(new_coord);
+
+  CU_ASSERT_EQUAL(mock_count, 0);
+  CU_ASSERT_EQUAL(next_move, MOVE);
+  CU_ASSERT_EQUAL(new_state, S_3);
+  CU_ASSERT_EQUAL(new_orient, right);
+  CU_ASSERT_EQUAL(new_coord.row, 13);
+  CU_ASSERT_EQUAL(new_coord.col, 14);
+  CU_ASSERT_EQUAL(new_visit, 2);
+  test_Block(new_junc, {BLOCK, BLOCK, PATH, BLOCK, BLOCK, -1, -1, 0, -1});
+}
+
+// false & true @ S3
+void test_S3_extra1() {
+  int32_t mock_count = 0;
+  setOrient(up);
+  setState(S_3);
+  setCoord({13,13});
+  visitSet({13,13}, 1); // one block up
+  juncSet({13,13}, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, -1, -1});
+
+  turtleMove next_move = studentTurtleStep();
+  mock_count = turtleStateTransit(mock_count, true, false, true);
+
+  states new_state = getState();
+  int32_t new_orient = getOrient();
+  map_pos_t new_coord = getCoord();
+  int32_t new_visit = visitGet(new_coord);
+  block_info_t new_junc = juncGet(new_coord);
+
+  CU_ASSERT_EQUAL(mock_count, 1);
+  CU_ASSERT_EQUAL(next_move, LEFT);
+  CU_ASSERT_EQUAL(new_state, S_3);
+  CU_ASSERT_EQUAL(new_orient, left);
+  CU_ASSERT_EQUAL(new_coord.row, 13);
+  CU_ASSERT_EQUAL(new_coord.col, 13);
+  CU_ASSERT_EQUAL(new_visit, 1);
+  test_Block(new_junc, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, -1, -1});
+}
+
+// true & true @ S3
+void test_S3_extra2() {
+  int32_t mock_count = 1;
+  setOrient(left);
+  setState(S_3);
+  setCoord({13,13});
+  visitSet({13,13}, 1); // one block up
+  juncSet({13,13}, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, -1, -1});
+
+  turtleMove next_move = studentTurtleStep();
+  mock_count = turtleStateTransit(mock_count, true, true, true);
+
+  states new_state = getState();
+  int32_t new_orient = getOrient();
+  map_pos_t new_coord = getCoord();
+  int32_t new_visit = visitGet(new_coord);
+  block_info_t new_junc = juncGet(new_coord);
+
+  CU_ASSERT_EQUAL(mock_count, 2);
+  CU_ASSERT_EQUAL(next_move, LEFT);
+  CU_ASSERT_EQUAL(new_state, S_1);
+  CU_ASSERT_EQUAL(new_orient, down);
+  CU_ASSERT_EQUAL(new_coord.row, 13);
+  CU_ASSERT_EQUAL(new_coord.col, 13);
+  CU_ASSERT_EQUAL(new_visit, 1);
+  test_Block(new_junc, {PATH, PATH, BLOCK, BLOCK, BLOCK, 0, 0, -1, -1});
 }
 
 // true & true @ S6
@@ -868,7 +1008,12 @@ int main() {
       (NULL == CU_add_test(pSuite, "test of turtleStateTransit default case", test_turtleStateTransit)) ||
       (NULL == CU_add_test(pSuite, "test of studentTurtleStep default case", test_studentTurtleStep)) || 
       (NULL == CU_add_test(pSuite, "test of visitGet special case", test_visitGet)) || 
-      (NULL == CU_add_test(pSuite, "test of S0 data combination", test_S0_extra)) ||
+      (NULL == CU_add_test(pSuite, "test of S0 data combination 1", test_S0_extra1)) ||
+      (NULL == CU_add_test(pSuite, "test of S0 data combination 2", test_S0_extra2)) ||
+      (NULL == CU_add_test(pSuite, "test of S0 data combination 3", test_S0_extra3)) ||
+      (NULL == CU_add_test(pSuite, "test of S1 data combination 1", test_S1_extra)) ||
+      (NULL == CU_add_test(pSuite, "test of S3 data combination 1", test_S3_extra1)) ||
+      (NULL == CU_add_test(pSuite, "test of S3 data combination 2", test_S3_extra2)) ||
       (NULL == CU_add_test(pSuite, "test of S6 data combination 1", test_S6_extra1)) ||
       (NULL == CU_add_test(pSuite, "test of S6 data combination 2", test_S6_extra2)))
     {

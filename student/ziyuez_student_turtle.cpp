@@ -4,7 +4,7 @@
  *
  * STUDENT NAME: Ziyue ZHANG
  * ANDREW ID: ziyuez
- * LAST UPDATE: Nov 21, 2021
+ * LAST UPDATE: Dec 4, 2021
  *
  * This file is an algorithm to solve the ece642rtle maze
  * using the right-hand rule.
@@ -27,6 +27,9 @@ static int32_t visit_map[23][23] = {0};             // visit counts for map
 static block_info_t junction_map[23][23] = {{BLOCK, BLOCK, BLOCK, BLOCK, BLOCK, 0, 0, 0, 0}};   // map marking junctions and walkable paths
 static map_pos_t turtle_coord = {11, 11};           // turtle position on visit map
 
+static const int32_t path_count_default = -1;
+static const int32_t turn_around_count = 4;
+static const int32_t turn_back_count = 2;
 
 // Functions that are only supposed to be called during test (getter/setters)
 
@@ -210,7 +213,7 @@ int32_t atPath(int32_t turtle_orient) {
  * Output: path_count     number of times path is visited
  */
 int32_t visitPath(int32_t turtle_orient) {
-  int32_t path_count = -1;
+  int32_t path_count = path_count_default;
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
   switch (turtle_orient) {
     case(left): 
@@ -299,8 +302,8 @@ path_type pickPath(int32_t turtle_orient, bool first_time) {
   int32_t back_count = visitPath(back_orient);
   int32_t left_count = visitPath(left_orient);
   int32_t right_count = visitPath(right_orient);
-  int32_t min_count = -1;
-  if (right_count == -1 || (left_count != -1 && left_count <= right_count)) {
+  int32_t min_count = path_count_default;
+  if ((right_count == path_count_default) || ((left_count != path_count_default) && (left_count <= right_count))) {
     min_count = left_count;
     next_path = LEFT_P;
     path_orient = left_orient;
@@ -310,13 +313,13 @@ path_type pickPath(int32_t turtle_orient, bool first_time) {
     path_orient = right_orient;
   }
   
-  if (min_count == -1 || (front_count != -1 && front_count <= min_count)) {
+  if ((min_count == path_count_default) || ((front_count != path_count_default) && (front_count <= min_count))) {
     min_count = front_count;
     next_path = FRONT_P;
     path_orient = front_orient;
   }
 
-  if ((min_count == -1 || (back_count != -1 && back_count <= min_count)) || (!first_time && back_count == 1)) {
+  if (((min_count == path_count_default) || ((back_count != path_count_default) && (back_count <= min_count))) || (!first_time && (back_count == 1))) {
     min_count = back_count;
     next_path = BACK_P;
     path_orient = back_orient;
@@ -340,7 +343,7 @@ path_type pickPath(int32_t turtle_orient, bool first_time) {
 void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
   block_info_t curr_info = junction_map[turtle_coord.row][turtle_coord.col];
   block_type faced_block = BLOCK;
-  int32_t faced_count = -1;
+  int32_t faced_count = path_count_default;
 
   if (!bumped) {
     faced_block = PATH;
@@ -375,7 +378,7 @@ void juncUpdate(int32_t turtle_orient, bool bumped, int32_t turn_count) {
   }
 
   if (!bumped) {
-    if (turn_count%2 != 0) curr_info.curr_block = JUNC;
+    if (turn_count%turn_back_count != 0) curr_info.curr_block = JUNC;
     if (turn_count == 0 && curr_info.curr_block != JUNC) curr_info.curr_block = PATH;
   }
 
@@ -459,7 +462,7 @@ int32_t turnLeftRight(int32_t turtle_orient, bool is_left) {
 /* 
  * This procedure decides the next move of turtle based on the current
  * state and updates the local visit map information. Always called 
- * before studentTurtleTransit() in each time cycle.
+ * after studentTurtleTransit() in each time cycle.
  * Output: next turtle movement to be performed by maze methods
  */
 turtleMove studentTurtleStep() {
@@ -572,7 +575,7 @@ int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, boo
     case S_2:
     {
       /* side effects */
-      turn_count = (turn_count+1)%4;
+      turn_count = (turn_count+1)%turn_around_count;
       juncUpdate(map_orient, bumped, turn_count);
       /* state transition */
       block_type curr_type = junction_map[turtle_coord.row][turtle_coord.col].curr_block;
@@ -588,7 +591,7 @@ int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, boo
       /* side effects */
       turn_count = turn_count+1;
       /* state transition */
-      if (turn_count != 2) turtle_state = S_3;        // T10
+      if (turn_count != turn_back_count) turtle_state = S_3;        // T10
       else turtle_state = S_1;                        // T11
       break;
 
@@ -635,7 +638,7 @@ int32_t turtleStateTransit(int32_t turn_count, bool first_time, bool bumped, boo
 
 /* 
  * This procedure decides the next state of turtle based on the current
- * state and conditions. Always called after studentTurtleTransit() 
+ * state and conditions. Always called before studentTurtleTransit() 
  * in each time cycle.
  * Input:  bumped       if turtle is facing a wall
  *         goal         if turtle is at goal
